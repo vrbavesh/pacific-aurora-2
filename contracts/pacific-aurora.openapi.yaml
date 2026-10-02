@@ -1,0 +1,1073 @@
+openapi: 3.1.0
+info:
+  title: Pacific Aurora API
+  version: 1.0.0
+  description: |
+    Canonical contract for Pacific Aurora. The frontend and backend are both
+    built against this single artifact.
+
+    Rules encoded here:
+    - All ids are opaque strings. All timestamps are ISO-8601 UTC strings.
+    - `{ data: ... }` on success, `{ error: { code, message, details?, requestId? } }`
+      on failure. HTTP failures are never returned as a 200.
+    - Attempting to read or modify another user's data returns 404, never 403,
+      so a cross-user request is indistinguishable from a missing one.
+    - Sign-in failures return one uniform code and message.
+    - OTP resend is rate-limited to once per 2 minutes (429 with Retry-After: 120).
+    - `places.status`, `items.status` and `relationship_type` are free text; the
+      named options in the UI are presets and manual entry is always allowed.
+      `character_status` is the only true enum.
+    - A world holds at most 10 custom entity types.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /auth/signup:
+    post:
+      summary: Register with email and password, sending a verification OTP
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        '201': { $ref: '#/components/responses/OtpSent' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /auth/otp/verify:
+    post:
+      summary: Verify the signup OTP
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp]
+              properties:
+                email: { type: string, format: email }
+                otp: { type: string }
+      responses:
+        '200':
+          description: Verified
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '410':
+          description: OTP expired
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+  /auth/otp/resend:
+    post:
+      summary: Resend the verification OTP (same generator)
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { $ref: '#/components/responses/OtpSent' }
+        '429': { $ref: '#/components/responses/OtpRateLimited' }
+  /auth/signin:
+    post:
+      summary: Sign in with email or userid plus password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: Email address or userid }
+                password: { type: string }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/UniformSignInFailure' }
+  /auth/google:
+    post:
+      summary: Sign in or sign up with Google
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credential]
+              properties:
+                credential: { type: string, description: Google ID token }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '201':
+          description: New account created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '409':
+          description: An account already exists for this address with a different sign-in method
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+  /auth/forgot-password:
+    post:
+      summary: Request a password-reset OTP; the response is uniform whether or not the account exists
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200':
+          description: OTP sent if the account exists
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '429': { $ref: '#/components/responses/OtpRateLimited' }
+  /auth/password/reset:
+    post:
+      summary: Reset the password using the OTP as the entry token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp, newPassword]
+              properties:
+                email: { type: string, format: email }
+                otp: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        '200':
+          description: Password updated and the user is let in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/logout:
+    post:
+      summary: End the session
+      responses:
+        '204': { description: Signed out }
+
+  /profiles/me:
+    get:
+      summary: The current user's profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataProfile' }
+    patch:
+      summary: Update username and/or userid; userid is unique; cleared userid keeps the completion flag raised
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                userId: { type: string }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataProfile' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /worlds:
+    get:
+      summary: List the current user's worlds, most recently opened first
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataWorlds' }
+    post:
+      summary: Create a world
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataWorld' }
+  /worlds/{worldId}:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: Get a world
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataWorld' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Rename a world
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataWorld' }
+    delete:
+      summary: Delete the world and everything in it, including linked books
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /worlds/{worldId}/open:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    post:
+      summary: Mark the world as most recently opened
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataWorld' }
+
+  /worlds/{worldId}/books:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List books in a world
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataBooks' }
+    post:
+      summary: Create a book; if it has no chapters, an "Introduction" chapter is created
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataBook' }
+  /books/{bookId}:
+    parameters: [{ $ref: '#/components/parameters/bookId' }]
+    get:
+      summary: Get a book
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataBook' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Rename a book
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataBook' }
+    delete:
+      summary: Delete the book's text and chapters; world entities are untouched
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /books/{bookId}/open:
+    parameters: [{ $ref: '#/components/parameters/bookId' }]
+    post:
+      summary: Mark the book as most recently opened
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataBook' }
+
+  /books/{bookId}/chapters:
+    parameters: [{ $ref: '#/components/parameters/bookId' }]
+    get:
+      summary: List chapters in position order
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapters' }
+    post:
+      summary: Add a chapter at the end
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapter' }
+  /books/{bookId}/chapters/{chapterId}:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    get:
+      summary: Get a chapter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapter' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Update a chapter name and/or content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 1 }
+                content: { type: object, description: TipTap JSON document }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapter' }
+    delete:
+      summary: Delete a chapter
+      responses:
+        '204': { description: Deleted }
+  /books/{bookId}/chapters/{chapterId}/move:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    post:
+      summary: Move a chapter up or down within its book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [direction]
+              properties:
+                direction: { type: string, enum: [up, down] }
+      responses:
+        '200':
+          description: Reordered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapters' }
+  /books/{bookId}/chapters/{chapterId}/important-points:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    get:
+      summary: List a chapter's important points
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapterPoints' }
+    post:
+      summary: Add an important point
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties: { content: { type: string, minLength: 1 } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataChapterPoint' }
+  /books/{bookId}/chapters/{chapterId}/important-points/{pointId}:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+      - { $ref: '#/components/parameters/pointId' }
+    delete:
+      summary: Delete an important point
+      responses:
+        '204': { description: Deleted }
+
+  /worlds/{worldId}/characters:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List characters in the world
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCharacters' }
+    post:
+      summary: Create a character
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+                age: { type: integer, minimum: 0, nullable: true }
+                health: { type: string, nullable: true }
+                distinctions: { type: string, nullable: true }
+                traits: { type: string, nullable: true }
+                mutations: { type: string, nullable: true }
+                status: { $ref: '#/components/schemas/CharacterStatus' }
+                notes: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCharacter' }
+  /characters/{entityId}:
+    parameters: [{ $ref: '#/components/parameters/entityId' }]
+    patch:
+      summary: Update a character; deleting one removes their timelines and relationship nodes
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CharacterInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCharacter' }
+    delete:
+      summary: Delete a character
+      responses:
+        '204': { description: Deleted }
+
+  /worlds/{worldId}/places:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List places
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataPlaces' }
+    post:
+      summary: Create a place
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+                status: { type: string, nullable: true, description: Free text; presets include Booming, Abandoned, Burned down }
+                lastChapterId: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataPlace' }
+  /places/{entityId}:
+    parameters: [{ $ref: '#/components/parameters/entityId' }]
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataPlace' }
+    delete:
+      responses: { '204': { description: Deleted } }
+
+  /worlds/{worldId}/items:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataItems' }
+    post:
+      summary: Create an item; wielder is either an existing world character or a manual name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+                status: { type: string, nullable: true, description: Free text; presets include Functional, Non functional }
+                power: { type: string, nullable: true }
+                wielderEntityId: { type: string, nullable: true }
+                manualWielderName: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataItem' }
+  /items/{entityId}:
+    parameters: [{ $ref: '#/components/parameters/entityId' }]
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataItem' }
+    delete:
+      responses: { '204': { description: Deleted } }
+
+  /worlds/{worldId}/custom-entity-types:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List custom section types (at most 10 per world)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityTypes' }
+    post:
+      summary: Create a custom section type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+                position: { type: integer, minimum: 0 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityType' }
+        '409':
+          description: The world already has 10 custom section types
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+  /custom-entity-types/{typeId}:
+    parameters: [{ $ref: '#/components/parameters/typeId' }]
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 1 }
+                position: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityType' }
+    delete:
+      responses: { '204': { description: Deleted } }
+  /custom-entity-types/{typeId}/attributes:
+    parameters: [{ $ref: '#/components/parameters/typeId' }]
+    post:
+      summary: Add a typed attribute to a custom section type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, fieldType]
+              properties:
+                name: { type: string, minLength: 1 }
+                fieldType: { $ref: '#/components/schemas/CustomFieldType' }
+                required: { type: boolean, default: false }
+                position: { type: integer, minimum: 0 }
+                options: { type: array, items: { type: string }, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityAttribute' }
+  /worlds/{worldId}/custom-entities:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List custom entities in the world
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntities' }
+    post:
+      summary: Create a custom entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entityTypeId, name]
+              properties:
+                entityTypeId: { type: string }
+                name: { type: string, minLength: 1 }
+                attributes: { type: object, additionalProperties: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntity' }
+  /custom-entities/{entityId}:
+    parameters: [{ $ref: '#/components/parameters/entityId' }]
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 1 }
+                attributes: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntity' }
+    delete:
+      responses: { '204': { description: Deleted } }
+
+  /worlds/{worldId}/relationships:
+    parameters: [{ $ref: '#/components/parameters/worldId' }]
+    get:
+      summary: List relationships in the world
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataRelationships' }
+    post:
+      summary: Create a relationship between two world entities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entityAId, entityBId, relationshipType]
+              properties:
+                entityAId: { type: string }
+                entityBId: { type: string }
+                relationshipType: { type: string, minLength: 1, description: Free text; presets include Partner, Friend, Teammate, Family }
+                sentiment: { type: integer, minimum: 0, maximum: 100, default: 50 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataRelationship' }
+  /relationships/{relationshipId}:
+    parameters: [{ $ref: '#/components/parameters/relationshipId' }]
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                relationshipType: { type: string, minLength: 1 }
+                sentiment: { type: integer, minimum: 0, maximum: 100 }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataRelationship' }
+    delete:
+      responses: { '204': { description: Deleted } }
+
+  /characters/{entityId}/timelines:
+    parameters: [{ $ref: '#/components/parameters/entityId' }]
+    get:
+      summary: List a character's per-book timelines
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataTimelines' }
+    post:
+      summary: Attach the character to a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookId]
+              properties: { bookId: { type: string } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataTimeline' }
+  /characters/{entityId}/timelines/{timelineId}/points:
+    parameters:
+      - { $ref: '#/components/parameters/entityId' }
+      - { $ref: '#/components/parameters/timelineId' }
+    get:
+      summary: List timeline points
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataTimelinePoints' }
+    post:
+      summary: Add a timeline point
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, minLength: 1 }
+                chapterId: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataTimelinePoint' }
+  /characters/{entityId}/timelines/{timelineId}/points/{pointId}:
+    parameters:
+      - { $ref: '#/components/parameters/entityId' }
+      - { $ref: '#/components/parameters/timelineId' }
+      - { $ref: '#/components/parameters/pointId' }
+    delete:
+      responses: { '204': { description: Deleted } }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    worldId: { name: worldId, in: path, required: true, schema: { type: string } }
+    bookId: { name: bookId, in: path, required: true, schema: { type: string } }
+    chapterId: { name: chapterId, in: path, required: true, schema: { type: string } }
+    pointId: { name: pointId, in: path, required: true, schema: { type: string } }
+    entityId: { name: entityId, in: path, required: true, schema: { type: string } }
+    typeId: { name: typeId, in: path, required: true, schema: { type: string } }
+    relationshipId: { name: relationshipId, in: path, required: true, schema: { type: string } }
+    timelineId: { name: timelineId, in: path, required: true, schema: { type: string } }
+  schemas:
+    CharacterStatus: { type: string, enum: [alive, dead] }
+    CustomFieldType: { type: string, enum: [text, number, boolean, date, select, multiselect] }
+    Profile:
+      type: object
+      properties:
+        id: { type: string }
+        username: { type: string, nullable: true }
+        userId: { type: string, nullable: true }
+        onboardingComplete: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    World:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        lastOpenedAt: { type: string, format: date-time, nullable: true }
+    Book:
+      type: object
+      properties:
+        id: { type: string }
+        worldId: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        lastOpenedAt: { type: string, format: date-time, nullable: true }
+    Chapter:
+      type: object
+      properties:
+        id: { type: string }
+        bookId: { type: string }
+        name: { type: string }
+        position: { type: integer }
+        content: { type: object }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ChapterImportantPoint:
+      type: object
+      properties:
+        id: { type: string }
+        chapterId: { type: string }
+        content: { type: string }
+        position: { type: integer }
+    Character:
+      type: object
+      properties:
+        entityId: { type: string }
+        name: { type: string }
+        age: { type: integer, nullable: true }
+        health: { type: string, nullable: true }
+        distinctions: { type: string, nullable: true }
+        traits: { type: string, nullable: true }
+        mutations: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/CharacterStatus' }
+        notes: { type: string, nullable: true }
+    CharacterInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        age: { type: integer, minimum: 0, nullable: true }
+        health: { type: string, nullable: true }
+        distinctions: { type: string, nullable: true }
+        traits: { type: string, nullable: true }
+        mutations: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/CharacterStatus' }
+        notes: { type: string, nullable: true }
+    Place:
+      type: object
+      properties:
+        entityId: { type: string }
+        name: { type: string }
+        status: { type: string, nullable: true }
+        lastChapterId: { type: string, nullable: true }
+    PlaceInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        status: { type: string, nullable: true }
+        lastChapterId: { type: string, nullable: true }
+    Item:
+      type: object
+      properties:
+        entityId: { type: string }
+        name: { type: string }
+        status: { type: string, nullable: true }
+        power: { type: string, nullable: true }
+        wielderEntityId: { type: string, nullable: true }
+        manualWielderName: { type: string, nullable: true }
+    ItemInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        status: { type: string, nullable: true }
+        power: { type: string, nullable: true }
+        wielderEntityId: { type: string, nullable: true }
+        manualWielderName: { type: string, nullable: true }
+    CustomEntityType:
+      type: object
+      properties:
+        id: { type: string }
+        worldId: { type: string }
+        name: { type: string }
+        position: { type: integer }
+    CustomEntityAttribute:
+      type: object
+      properties:
+        id: { type: string }
+        entityTypeId: { type: string }
+        name: { type: string }
+        fieldType: { $ref: '#/components/schemas/CustomFieldType' }
+        required: { type: boolean }
+        position: { type: integer }
+        options: { type: array, items: { type: string }, nullable: true }
+    CustomEntity:
+      type: object
+      properties:
+        entityId: { type: string }
+        name: { type: string }
+        entityTypeId: { type: string }
+        attributes: { type: object, additionalProperties: true }
+    Relationship:
+      type: object
+      properties:
+        id: { type: string }
+        worldId: { type: string }
+        entityAId: { type: string }
+        entityBId: { type: string }
+        relationshipType: { type: string }
+        sentiment: { type: integer, minimum: 0, maximum: 100 }
+    CharacterTimeline:
+      type: object
+      properties:
+        id: { type: string }
+        characterEntityId: { type: string }
+        bookId: { type: string }
+    CharacterTimelinePoint:
+      type: object
+      properties:
+        id: { type: string }
+        timelineId: { type: string }
+        content: { type: string }
+        position: { type: integer }
+        chapterId: { type: string, nullable: true }
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object }, nullable: true }
+            requestId: { type: string, nullable: true }
+    DataEnvelope:
+      type: object
+      properties: { data: { nullable: true } }
+    # Data envelopes
+    DataProfile: { type: object, properties: { data: { $ref: '#/components/schemas/Profile' } } }
+    DataWorld: { type: object, properties: { data: { $ref: '#/components/schemas/World' } } }
+    DataWorlds: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/World' } } } }
+    DataBook: { type: object, properties: { data: { $ref: '#/components/schemas/Book' } } }
+    DataBooks: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Book' } } } }
+    DataChapter: { type: object, properties: { data: { $ref: '#/components/schemas/Chapter' } } }
+    DataChapters: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Chapter' } } } }
+    DataChapterPoint: { type: object, properties: { data: { $ref: '#/components/schemas/ChapterImportantPoint' } } }
+    DataChapterPoints: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/ChapterImportantPoint' } } } }
+    DataCharacter: { type: object, properties: { data: { $ref: '#/components/schemas/Character' } } }
+    DataCharacters: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Character' } } } }
+    DataPlace: { type: object, properties: { data: { $ref: '#/components/schemas/Place' } } }
+    DataPlaces: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Place' } } } }
+    DataItem: { type: object, properties: { data: { $ref: '#/components/schemas/Item' } } }
+    DataItems: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Item' } } } }
+    DataCustomEntityType: { type: object, properties: { data: { $ref: '#/components/schemas/CustomEntityType' } } }
+    DataCustomEntityTypes: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CustomEntityType' } } } }
+    DataCustomEntityAttribute: { type: object, properties: { data: { $ref: '#/components/schemas/CustomEntityAttribute' } } }
+    DataCustomEntity: { type: object, properties: { data: { $ref: '#/components/schemas/CustomEntity' } } }
+    DataCustomEntities: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CustomEntity' } } } }
+    DataRelationship: { type: object, properties: { data: { $ref: '#/components/schemas/Relationship' } } }
+    DataRelationships: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Relationship' } } } }
+    DataTimeline: { type: object, properties: { data: { $ref: '#/components/schemas/CharacterTimeline' } } }
+    DataTimelines: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CharacterTimeline' } } } }
+    DataTimelinePoint: { type: object, properties: { data: { $ref: '#/components/schemas/CharacterTimelinePoint' } } }
+    DataTimelinePoints: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CharacterTimelinePoint' } } } }
+  responses:
+    NotFound:
+      description: Not found, or the resource belongs to another user
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    Conflict:
+      description: Conflict
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    Validation:
+      description: Validation failed
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    UniformSignInFailure:
+      description: Uniform sign-in failure
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    OtpSent:
+      description: OTP sent
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } }
+    OtpRateLimited:
+      description: OTP resend is limited to once per 2 minutes
+      headers:
+        Retry-After: { schema: { type: integer }, description: 120 }
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
