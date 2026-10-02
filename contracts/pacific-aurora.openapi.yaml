@@ -178,6 +178,16 @@ paths:
       summary: End the session
       responses:
         '204': { description: Signed out }
+  /auth/session:
+    get:
+      summary: The current session's user and profile, used to decide routing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /profiles/me:
     get:
@@ -637,6 +647,15 @@ paths:
               schema: { $ref: '#/components/schemas/ErrorEnvelope' }
   /custom-entity-types/{typeId}:
     parameters: [{ $ref: '#/components/parameters/typeId' }]
+    get:
+      summary: Get a custom section type with its attribute definitions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityTypeDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
     patch:
       requestBody:
         content:
@@ -656,6 +675,14 @@ paths:
       responses: { '204': { description: Deleted } }
   /custom-entity-types/{typeId}/attributes:
     parameters: [{ $ref: '#/components/parameters/typeId' }]
+    get:
+      summary: List the attribute definitions of a custom section type
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataCustomEntityAttributes' }
     post:
       summary: Add a typed attribute to a custom section type
       requestBody:
@@ -1000,6 +1027,34 @@ components:
         content: { type: string }
         position: { type: integer }
         chapterId: { type: string, nullable: true }
+    Session:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            email: { type: string, format: email, nullable: true }
+        profile: { $ref: '#/components/schemas/Profile' }
+    DataSession:
+      type: object
+      properties: { data: { $ref: '#/components/schemas/Session' } }
+    CustomEntityTypeDetail:
+      type: object
+      properties:
+        id: { type: string }
+        worldId: { type: string }
+        name: { type: string }
+        position: { type: integer }
+        attributes:
+          type: array
+          items: { $ref: '#/components/schemas/CustomEntityAttribute' }
+    DataCustomEntityTypeDetail:
+      type: object
+      properties: { data: { $ref: '#/components/schemas/CustomEntityTypeDetail' } }
+    DataCustomEntityAttributes:
+      type: object
+      properties: { data: { type: array, items: { $ref: '#/components/schemas/CustomEntityAttribute' } } }
     ErrorEnvelope:
       type: object
       properties:
@@ -1068,6 +1123,8 @@ components:
     OtpRateLimited:
       description: OTP resend is limited to once per 2 minutes
       headers:
-        Retry-After: { schema: { type: integer }, description: 120 }
+        Retry-After:
+          schema: { type: integer, enum: [120] }
+          description: Seconds to wait before the OTP resend can be retried.
       content:
         application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }

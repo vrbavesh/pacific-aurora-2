@@ -84,7 +84,6 @@ Verbs appear only where CRUD does not fit:
 ```
 /api/auth/otp/resend
 /api/auth/password/reset
-/api/auth/signin/resolve
 /api/books/{bookId}/chapters/{chapterId}/move
 ```
 

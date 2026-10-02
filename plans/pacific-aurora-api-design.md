@@ -31,7 +31,6 @@ Verbs appear only where an action is not a plain CRUD operation:
 - `POST /api/auth/password/reset`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/google`
-- `POST /api/auth/signin/resolve` *(client format check; uniform result)*
 - `POST /api/worlds/{worldId}/open`
 - `POST /api/books/{bookId}/open`
 - `POST /api/books/{bookId}/chapters/{chapterId}/move`
