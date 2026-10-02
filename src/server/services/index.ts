@@ -3,6 +3,7 @@ import type {
   CustomEntityType,
 } from "@/src/lib/api/generated";
 import { ownedOr404 } from "../ownership";
+import { ConflictError } from "@/src/lib/api/errors";
 import type {
   BookRepository,
   ChapterRepository,
@@ -128,8 +129,13 @@ export const itemService = (repo: ItemRepository) => ({
 export const customEntityTypeService = (repo: CustomEntityTypeRepository) => ({
   list: (worldId: string) => repo.list(worldId),
   get: (id: string) => owned(repo.get(id)),
-  create: (worldId: string, name: string, position?: number) =>
-    repo.create(worldId, name, position),
+  create: async (worldId: string, name: string, position?: number) => {
+    const existing = await repo.list(worldId);
+    if (existing.length >= 10) {
+      throw new ConflictError("A world can have at most 10 custom sections");
+    }
+    return repo.create(worldId, name, position);
+  },
   update: async (
     id: string,
     patch: Partial<Pick<CustomEntityType, "name" | "position">>,
