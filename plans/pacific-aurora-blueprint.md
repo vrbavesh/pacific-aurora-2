@@ -414,3 +414,14 @@ are the narrowest reading that stays inside the supplied schema.
   are fixed before completion.
 - **Plan mutation protocol.** A step may be split, inserted, skipped, or abandoned
   only with a written reason recorded in this document.
+
+## 9. Mutation log
+
+- Step 2 — the live `supabase db reset` / `supabase db lint` / per-table policy
+  smoke tests could not be executed because this host has no Docker, no local
+  Postgres, and no `supabase` CLI. The schema was instead applied verbatim from
+  the source document into `supabase/migrations/0001_pacific_aurora.sql`, and
+  coverage was validated by `tests/db/migration.test.ts`, which counts every
+  table, enum, policy, helper function, trigger, and RLS enablement. When a
+  Supabase-enabled environment is available, re-run the step's original
+  verification commands.
