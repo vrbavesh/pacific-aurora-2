@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -11,149 +12,318 @@ export default function ForgotPasswordPage() {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((c) => (c <= 1 ? 0 : c - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
+
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      if (step === "email") {
-        const res = await fetch("/api/auth/forgot-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-        if (!res.ok) throw new Error("Could not send code");
-        setStep("otp");
-        startCooldown();
-      } else if (step === "otp") {
-        const res = await fetch("/api/auth/password/reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp, newPassword }),
-        });
-        if (!res.ok) {
-          if (res.status === 410) throw new Error("Code expired. Please resend.");
-          throw new Error("Invalid code. Please try again.");
-        }
-        router.push("/home");
-        router.refresh();
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error?.message ?? "Could not send reset code");
+      setStep("otp");
+      setCooldown(120);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const startCooldown = () => {
-    setCooldown(120);
-    const timer = setInterval(() => {
-      setCooldown((c) => (c <= 1 ? (clearInterval(timer), 0) : c - 1));
-    }, 1000);
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/password/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error?.message ?? "Password reset failed");
+      setSuccess("Your password has been reset. Returning to sign in…");
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid code or password requirement not met.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (cooldown > 0) return;
-    fetch("/api/auth/otp/resend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, type: "recovery" }),
-    }).then(() => startCooldown());
+    try {
+      const res = await fetch("/api/auth/otp/resend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "recovery" }),
+      });
+      if (!res.ok) throw new Error("Could not resend code");
+      setCooldown(120);
+    } catch {
+      setError("Unable to resend verification code right now.");
+    }
+  };
+
+  const formatCooldown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   return (
-    <main className="min-h-[100dvh] flex items-center justify-center px-6 bg-background">
-      <section className="w-full max-w-md space-y-6">
-        <header className="text-center">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-accent/80 mb-2">
-            Pacific Aurora
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Reset your password
-          </h1>
+    <main className="relative flex min-h-screen items-center justify-center px-6 py-12">
+      <motion.section
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="frosted-panel relative w-full max-w-md rounded-3xl p-8 sm:p-10 shadow-2xl"
+      >
+        {/* Subtle Decorative Ambient Beam */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 h-24 w-48 rounded-full bg-accent/20 blur-3xl"
+        />
+
+        {/* Editorial Header */}
+        <header className="text-center space-y-2 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent/90"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <span>Recovery</span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl font-light tracking-tight text-white sm:text-4xl"
+          >
+            Reset your <span className="font-editorial italic font-normal">password</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="text-xs text-foreground-subtle max-w-xs mx-auto leading-relaxed"
+          >
+            {step === "email"
+              ? "Provide your registered email to receive an entry verification code."
+              : `Enter the code sent to ${email} alongside your new password.`}
+          </motion.p>
         </header>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {step === "email" && (
-            <>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
+        {/* Calm White Notice for Errors / Success */}
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-white/95"
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="mb-6 rounded-2xl border border-accent/30 bg-accent/10 p-3.5 text-center text-xs leading-relaxed text-accent"
+          >
+            {success}
+          </motion.div>
+        )}
+
+        <AnimatePresence mode="wait">
+          {step === "email" ? (
+            <motion.form
+              key="step-email"
+              onSubmit={handleSendCode}
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-5"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="space-y-1.5"
+              >
+                <label className="block text-xs font-mono tracking-wider uppercase text-foreground-subtle">
+                  Email Address
+                </label>
+                <motion.input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField("email")}
+                  onBlur={() => setFocusedField(null)}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  disabled={loading}
+                  placeholder="author@pacificaurora.dev"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                  whileFocus={{ scale: 1.005 }}
                 />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-accent px-6 py-3 text-sm font-semibold text-[#06101a] transition hover:brightness-110"
-              >
-                Send reset code
-              </button>
-            </>
-          )}
+              </motion.div>
 
-          {step === "otp" && (
-            <>
-              <p className="text-sm text-foreground/70 text-center">
-                Enter the 6-digit code sent to <strong>{email}</strong>
-              </p>
-              <div>
-                <label className="block text-sm font-medium mb-1">Code</label>
-                <input
+              <motion.button
+                type="submit"
+                disabled={loading}
+                whileHover={{ y: -1, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
+              >
+                {loading ? "Transmitting code…" : "Send Reset Code"}
+              </motion.button>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="step-otp"
+              onSubmit={handleResetPassword}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-4"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="space-y-1.5 text-center"
+              >
+                <label className="block text-xs font-mono tracking-wider uppercase text-foreground-subtle">
+                  6-Digit Recovery Code
+                </label>
+                <motion.input
                   type="text"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  onFocus={() => setFocusedField("otp")}
+                  onBlur={() => setFocusedField(null)}
                   maxLength={6}
                   required
+                  autoFocus
                   inputMode="numeric"
-                  className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-center text-2xl tracking-widest text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  disabled={loading}
+                  placeholder="••••••"
+                  className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-center font-mono text-xl tracking-[0.4em] text-accent placeholder:text-foreground-subtle/30 transition-all duration-200 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  whileFocus={{ scale: 1.01 }}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">New password</label>
-                <input
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="space-y-1.5"
+              >
+                <label className="block text-xs font-mono tracking-wider uppercase text-foreground-subtle">
+                  New Password
+                </label>
+                <motion.input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  minLength={8}
+                  onFocus={() => setFocusedField("newPassword")}
+                  onBlur={() => setFocusedField(null)}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  minLength={8}
+                  disabled={loading}
+                  placeholder="Minimum 8 characters"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                  whileFocus={{ scale: 1.005 }}
                 />
-              </div>
-              <button
+              </motion.div>
+
+              <motion.button
                 type="submit"
-                className="w-full rounded-full bg-accent px-6 py-3 text-sm font-semibold text-[#06101a] transition hover:brightness-110"
+                disabled={loading || otp.length < 6 || newPassword.length < 8}
+                whileHover={{ y: -1, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
               >
-                Reset password
-              </button>
-              <p className="text-center text-sm text-foreground/50">
-                Didn&apos;t get it?{" "}
-                <button
+                {loading ? "Updating password…" : "Reset & Save Password"}
+              </motion.button>
+
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="flex items-center justify-between text-xs text-foreground-subtle pt-2"
+              >
+                <motion.button
+                  type="button"
+                  onClick={() => setStep("email")}
+                  whileHover={{ x: -4 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="hover:text-white transition-colors"
+                >
+                  ← Change email
+                </motion.button>
+
+                <motion.button
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0}
-                  className="text-accent hover:underline disabled:text-foreground/30"
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="text-accent hover:underline disabled:text-foreground-subtle/40 disabled:no-underline font-mono"
                 >
-                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
-                </button>
-              </p>
-            </>
+                  {cooldown > 0
+                    ? `Resend in ${formatCooldown(cooldown)}`
+                    : "Resend code"}
+                </motion.button>
+              </motion.div>
+            </motion.form>
           )}
-        </form>
+        </AnimatePresence>
 
-        <p className="text-center text-sm text-foreground/50">
-          Remembered it?{" "}
-          <Link href="/signin" className="text-accent hover:underline">
+        {/* Footer Link */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-8 text-center text-xs text-foreground-subtle"
+        >
+          Remembered your password?{" "}
+          <Link
+            href="/signin"
+            className="text-accent hover:text-accent-dim hover:underline font-medium transition-colors"
+          >
             Sign in
           </Link>
-        </p>
-      </section>
+        </motion.p>
+      </motion.section>
     </main>
   );
 }
