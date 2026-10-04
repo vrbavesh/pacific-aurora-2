@@ -1,178 +1,203 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import AuroraBackground from "@/src/components/AuroraBackground";
-import { useScroll, useTransform } from "motion/react";
 
 export default function LandingPage() {
   const { scrollY } = useScroll();
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+
+  const heroY = useTransform(scrollY, [0, 600], [0, 120]);
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0.3]);
 
   return (
     <main className="relative flex min-h-screen flex-col px-6 py-6 sm:px-12 sm:py-10">
-      {/* Top Editorial Bar */}
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="h-2 w-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_#2dd4bf]" />
-          <span className="font-mono text-xs tracking-[0.25em] uppercase text-foreground-subtle">
-            Pacific Aurora
-          </span>
-        </div>
+      <AuroraBackground />
 
-        {/* Top-right Navigation Actions */}
-        <nav className="flex items-center gap-3">
-          <Link
-            href="/signin"
-            className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-2 text-xs font-medium tracking-wide text-foreground/90 transition-all duration-300 hover:border-white/30 hover:bg-white/[0.08] hover:text-white"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-full bg-accent/90 px-5 py-2 text-xs font-semibold tracking-wide text-[#040911] shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all duration-300 hover:bg-accent hover:shadow-[0_0_30px_rgba(45,212,191,0.5)] hover:scale-[1.02]"
-          >
-            Sign Up
-          </Link>
+      {/* 1. NAVIGATION */}
+      <header className="flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 text-sm font-medium tracking-widest uppercase text-[#9ac8c0]">
+          <span className="h-2 w-2 rounded-full bg-[#2dd4bf]" />
+          Pacific Aurora
+        </Link>
+        <nav className="flex items-center gap-6 text-xs uppercase tracking-widest text-white/80">
+          <a href="#how-it-works" className="hover:text-white transition">How it works</a>
+          <Link href="/signin" className="hover:text-white transition">Sign in</Link>
+          <Link href="/signup" className="rounded-full bg-[#2dd4bf] px-5 py-2 text-[#020a14] font-bold hover:bg-[#2bd0c9] transition">Start writing</Link>
         </nav>
       </header>
 
-      {/* Hero */}
-      <section className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center text-center py-12 sm:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center gap-6"
-        >
-          <h1 className="max-w-3xl text-3xl font-light tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.08]">
-            A scratchpad for worlds that <br className="hidden sm:inline" />
-            <span className="font-editorial italic font-normal text-white drop-shadow-[0_2px_24px_rgba(45,212,191,0.25)]">
-              want to breathe.
-            </span>
-          </h1>
-
-          <p className="max-w-2xl text-balance text-sm sm:text-base leading-relaxed text-foreground-muted/90 font-light">
-            Draft books, lay out worlds, and trace the people in them — calm,
-            private, and quietly your own.
-          </p>
-
-          <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
-            <motion.div whileHover={{ y: -2, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="/signup"
-                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-accent px-8 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_32px_rgba(45,212,191,0.35)] transition-all duration-300 hover:shadow-[0_0_48px_rgba(45,212,191,0.6)]"
-              >
-                <span>Create an Account</span>
-                <svg
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -2, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="/signin"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.03] px-8 py-3.5 text-sm font-medium tracking-wide text-foreground/90 backdrop-blur-md transition-all duration-300 hover:border-white/35 hover:bg-white/[0.08] hover:text-white"
-              >
-                <span>Sign In</span>
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
+      {/* 2. HERO */}
+      <section className="flex-1 flex flex-col items-center justify-center text-center mt-20 max-w-5xl mx-auto">
+        <motion.h1 style={{ y: heroY, opacity: heroOpacity }} className="text-5xl sm:text-7xl font-serif italic leading-tight text-white">
+          Write the story.<br />Keep the world alive.
+        </motion.h1>
+        <p className="mt-6 text-lg text-[#bef7eb] max-w-2xl">
+          Pacific Aurora lets you build the full world behind your fiction — every character, place, item, and custom fact — and then write your books directly inside that world, so nothing drifts out of sync.
+        </p>
+        <div className="mt-10 flex gap-4">
+          <Link href="/signup" className="rounded-full bg-[#2dd4bf] px-8 py-4 text-[#020a14] font-bold text-sm uppercase tracking-wider">Start writing</Link>
+          <a href="#how-it-works" className="rounded-full border border-white/20 px-8 py-4 text-sm uppercase tracking-wider text-white/80 hover:bg-white/5 transition">How it works</a>
+        </div>
       </section>
 
-      {/* Feature Sections: What Authors Can Do */}
-      <section className="mx-auto w-full max-w-4xl py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-12"
-        >
-          {/* Write & Draft */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.5 6.5L17.5 3.25m0 0L20.75 6.5 17.5 9.75m-3.25 0H17.5" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-foreground">Write without distraction</h3>
-                <p className="text-sm text-foreground-muted/90 mt-1 max-w-xl">
-                  A calm, focused editor. Auto-save, chapter tabs, and a fluid reading experience — nothing between you and the prose.
-                </p>
-              </div>
+      {/* 3. PRODUCT PREVIEW */}
+      <section className="max-w-6xl mx-auto w-full mt-24 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-2xl font-serif italic text-white">An actual glimpse of the workflow</h2>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-[#b8e9dc]">
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-white font-semibold mb-2">World: Aurora</p>
+            <ul className="list-disc pl-4 space-y-1">
+              <li>Characters</li>
+              <li>Places</li>
+              <li>Items</li>
+              <li>Custom sections</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-white font-semibold mb-2">Books</p>
+            <ul className="list-disc pl-4 space-y-1">
+              <li>The Beginning</li>
+              <li>Emberfall</li>
+              <li>The Drift</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-white font-semibold mb-2">Current Book</p>
+            <div className="rounded-lg bg-black/40 p-3">
+              <p className="text-white leading-relaxed italic">&ldquo;The terminal dings softly as Adaeze sets the prototype down.&rdquo;</p>
+              <p className="mt-3 text-[#2dd4bf] font-mono text-xs">Editor mode active</p>
             </div>
           </div>
-
-          {/* Worlds & Entities */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-foreground">Build living worlds</h3>
-                <p className="text-sm text-foreground-muted/90 mt-1 max-w-xl">
-                  Create worlds with characters, places, items, and custom sections. Rich fields — traits, status, relationships — all interconnected.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Relationships & Timelines */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-foreground">Map relationships & timelines</h3>
-                <p className="text-sm text-foreground-muted/90 mt-1 max-w-xl">
-                  Visual character graphs with sentiment, relationship types, and per-book timelines. Track who died in Chapter 2 and returned in Chapter 6.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Privacy & Security */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-foreground">Your work stays yours</h3>
-                <p className="text-sm text-foreground-muted/90 mt-1 max-w-xl">
-                  Strict isolation — no one else can see your data. Calm error messages. Secure sign-in. Your stories never leak.
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        </div>
       </section>
+
+      {/* 4. HOW IT WORKS */}
+      <section id="how-it-works" className="max-w-5xl mx-auto w-full mt-20 space-y-12">
+        <h2 className="text-3xl font-serif italic text-white">How it works</h2>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-xl border border-white/10 p-5">
+            <h3 className="text-white font-semibold mb-2">Page structure</h3>
+            <p className="text-sm text-[#a5d8cd]">A clean map of the platform: worlds, books, chapters, and entities stay bound to one another so design research never lives in a separate app.</p>
+          </div>
+          <div className="rounded-xl border border-white/10 p-5">
+            <h3 className="text-white font-semibold mb-2">Walking the process</h3>
+            <p className="text-sm text-[#a5d8cd]">Front page, overview, worlds, books, chapters: a clear subdivision so you can drop into any stage without hunting.</p>
+          </div>
+          <div className="rounded-xl border border-white/10 p-5">
+            <h3 className="text-white font-semibold mb-2">What you create here</h3>
+            <p className="text-sm text-[#a5d8cd]">Characters, places, items, and custom sections—each as a fully fleshed object, not a static note.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. BUILDING THE STORY INFRASTRUCTURE */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Building the story infrastructure</h2>
+        <p className="mt-4 text-[#b8e9dc]">Set up the page structure and editor grouping so your writing flows naturally. Define the outline of the page first, then assign content to each block.</p>
+      </section>
+
+      {/* 6. STRATEGY MAP */}
+      <section className="max-w-5xl mx-auto w-full mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        {["Universe", "Book", "Chapter", "Words"].map((label) => (
+          <div key={label} className="rounded-lg border border-white/10 py-4">
+            <span className="text-white font-semibold">{label}</span>
+          </div>
+        ))}
+      </section>
+
+      {/* 7. EDITOR & ASSETS */}
+      <section className="max-w-5xl mx-auto w-full mt-12 grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 className="text-white font-semibold mb-2">Editor & assets</h3>
+          <p className="text-sm text-[#a5d8cd]">Embed editor docs, outline tasks, and linked items directly in the page so research and prose never split apart.</p>
+        </div>
+        <div>
+          <h3 className="text-white font-semibold mb-2">Basic page items</h3>
+          <p className="text-sm text-[#a5d8cd]">Add any tool widget, embed URL, or reference asset from the content library to any work page.</p>
+        </div>
+      </section>
+
+      {/* 8. PROJECT TRACKING */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Project tracking</h2>
+        <div className="mt-4 grid grid-cols-3 gap-4 text-xs">
+          {["To Do", "In Progress", "Done"].map((c) => (
+            <div key={c} className="rounded-lg border border-white/10 p-3">
+              <p className="text-white mb-2">{c}</p>
+              <div className="h-24 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 9. SECTIONS AND LISTS */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Sections and lists</h2>
+        <p className="mt-2 text-[#a5d8cd]">Toggle any workspace between outline, spec-sheet, and notebook-mode writes.</p>
+      </section>
+
+      {/* 10. TIME ZONES & SCHEDULES */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Time zones & schedules</h2>
+        <p className="mt-2 text-[#a5d8cd]">Disambiguate scenes against timeline, then reorder explorations, drafts, and reviews on the same timeline.</p>
+      </section>
+
+      {/* 11. MONITORING TABLE */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Monitoring table</h2>
+        <div className="mt-4 grid grid-cols-6 gap-2 text-[10px]">
+          {Array.from({length:12}).map((_,i) => (
+            <div key={i} className="rounded bg-white/5 h-10"></div>
+          ))}
+        </div>
+      </section>
+
+      {/* 12. EXPLORE YOUR CONTENT SYSTEM */}
+      <section className="max-w-5xl mx-auto w-full mt-16 border border-white/10 rounded-xl p-8 text-center">
+        <h2 className="text-xl text-white">Explore your content system</h2>
+        <p className="mt-2 text-[#a5d8cd]">Run your own constraint checks against the outline at any point.</p>
+      </section>
+
+      {/* 13. BOOKS AND MAGAZINE LAYOUTS */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Books and magazine layouts</h2>
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 rounded-lg bg-white/5 border border-white/10" />)}
+        </div>
+      </section>
+
+      {/* 14. INTEGRATION BUTTONS */}
+      <section className="max-w-5xl mx-auto w-full mt-16">
+        <h2 className="text-2xl font-serif italic text-white">Integration buttons</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {['Gmail','Drive','YouTube','WhatsApp','Instagram','Telegram'].map(s => (
+            <span key={s} className="rounded-full border border-white/20 px-4 py-2 text-xs">{s}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* 15. FAQ */}
+      <section id="faq" className="max-w-3xl mx-auto w-full mt-20 space-y-6">
+        <h2 className="text-2xl font-serif italic text-white">Common questions</h2>
+        {[
+          {q:'Where do I start?', a:'Create a workspace, then add a book to bind the outline.'},
+          {q:'Can I import existing notes?', a:'Yes, import a spreadsheet variant or .notion file.'},
+          {q:'Is my work private?', a:'Private by default with optional sharing.'},
+        ].map((item,i) => (
+          <details key={i} className="group rounded-lg border border-white/10 p-4">
+            <summary className="cursor-pointer text-white font-medium">{item.q}</summary>
+            <p className="mt-2 text-[#a5d8cd]">{item.a}</p>
+          </details>
+        ))}
+      </section>
+
+      {/* 16. FINAL CTA */}
+      <footer className="mt-24 pt-12 border-t border-white/10 max-w-5xl mx-auto flex flex-col items-center text-center">
+        <h2 className="text-2xl text-white">Ready to write?</h2>
+        <Link href="/signup" className="mt-6 rounded-full bg-[#2dd4bf] px-8 py-4 text-[#020a14] font-bold uppercase tracking-widest">Start writing</Link>
+        <p className="mt-6 text-xs text-white/40">© 2026 Pacific Aurora</p>
+      </footer>
     </main>
   );
 }
