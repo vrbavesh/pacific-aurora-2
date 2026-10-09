@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { redirectAfterAuth, setToken } from "@/src/lib/api/client";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -58,10 +59,16 @@ export default function ForgotPasswordPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error?.message ?? "Password reset failed");
-      setSuccess("Your password has been reset. Returning to sign in…");
+      const token = json?.data?.session?.access_token;
+      if (typeof token === "string" && token) setToken(token);
+      setSuccess("Your password has been reset. Letting you in…");
+      // Spec: the reset lets the user in, routed by the completion flag.
       setTimeout(() => {
-        router.push("/signin");
-      }, 1500);
+        void redirectAfterAuth((path) => {
+          router.push(path);
+          router.refresh();
+        });
+      }, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid code or password requirement not met.");
     } finally {

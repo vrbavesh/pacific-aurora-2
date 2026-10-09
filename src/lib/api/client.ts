@@ -80,12 +80,12 @@ export async function redirectAfterAuth(next: (path: string) => void): Promise<v
     const res = await apiFetch<{ user: { id: string }; profile: SessionProfile | null }>(
       "/api/auth/session",
     );
-    if (res.data.profile && res.data.profile.onboardingComplete === false) {
+    if (!res.data.profile?.onboardingComplete || !res.data.profile.userId) {
       next("/onboarding");
     } else {
       next("/home");
     }
   } catch {
-    next("/home");
+    next("/signin");
   }
 }

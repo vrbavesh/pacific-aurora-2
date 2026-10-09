@@ -2,9 +2,12 @@
 
 import { useEffect } from "react";
 import Lenis from "@studio-freight/lenis";
+import { usePathname } from "next/navigation";
 
 export default function SmoothScrollProvider() {
+  const pathname = usePathname();
   useEffect(() => {
+    if (pathname !== "/") return;
     // Respect user's motion preference
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
@@ -29,7 +32,7 @@ export default function SmoothScrollProvider() {
       cancelAnimationFrame(animationFrameId);
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { CaretDown, PencilSimple, SignOut, User } from "@phosphor-icons/react";
+import { apiFetch, clearToken } from "@/src/lib/api/client";
 
 interface UserProfile {
   username: string | null;
@@ -16,60 +18,57 @@ export default function AccountMenu() {
   const reduce = useReducedMotion();
 
   useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((data) => {
-        setProfile(data.data?.profile ?? { username: null, userId: null });
+    apiFetch<{ profile: UserProfile | null }>("/api/auth/session")
+      .then(({ data }) => {
+        setProfile(data.profile ?? { username: null, userId: null });
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setProfile(null);
+        setLoading(false);
+      });
   }, []);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/";
+      await apiFetch("/api/auth/logout", { method: "POST" });
     } catch {
-      /* toast */
+      /* session may already be invalid; clear locally either way */
     }
+    clearToken();
+    window.location.href = "/";
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="h-9 w-24 animate-pulse border border-white/10 bg-white/5" />
+    );
+  }
 
   return (
     <div className="relative">
+      {/* Kept above the click-away overlay so the trigger stays usable. */}
       <motion.button
-        onClick={() => setOpen(!open)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 text-sm font-medium text-foreground/90 transition hover:border-white/30 hover:bg-white/5"
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        whileTap={reduce ? undefined : { scale: 0.97 }}
         aria-expanded={open}
-        aria-haspopup="true"
+        aria-haspopup="menu"
+        aria-label="Open account menu"
+        className="relative z-50 flex items-center gap-2 border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 text-foreground-muted transition-colors hover:bg-white/10 hover:text-foreground"
       >
-        <svg
-          className="w-5 h-5 text-foreground/60"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        <span className="flex h-7 w-7 items-center justify-center border border-white/10 bg-white/10">
+          <User size={15} weight="regular" />
+        </span>
+        <span className="hidden text-sm sm:inline">{profile?.username ?? "Account"}</span>
+        <motion.span
+          animate={reduce ? undefined : { rotate: open ? 180 : 0 }}
+          transition={{ duration: reduce ? 0 : 0.25, ease: "easeInOut" }}
+          className="inline-flex text-foreground-muted"
+          aria-hidden="true"
         >
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        <span className="hidden sm:inline">{profile?.username ?? "Account"}</span>
-        <motion.svg
-          className="w-4 h-4 text-foreground/50"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: reduce ? 0 : 0.2 }}
-        >
-          <polyline points="18 15 12 21 6 15" />
-        </motion.svg>
+          <CaretDown size={12} weight="bold" />
+        </motion.span>
       </motion.button>
 
       <AnimatePresence>
@@ -85,73 +84,51 @@ export default function AccountMenu() {
               aria-hidden="true"
             />
             <motion.div
-              initial={reduce ? false : { opacity: 0, y: 8, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduce ? undefined : { opacity: 0, y: -8, scale: 0.96 }}
-              transition={{ duration: reduce ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl border border-white/10 bg-background/90 backdrop-blur-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.1)] z-50"
+              initial={reduce ? false : { opacity: 0, x: 20, scale: 0.97 }}
+              animate={reduce ? undefined : { opacity: 1, x: 0, scale: 1 }}
+              exit={reduce ? undefined : { opacity: 0, x: 20, scale: 0.97 }}
+              transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+              role="menu"
+              aria-label="Account"
+              className="absolute right-0 top-full z-50 mt-3 w-72 origin-top-right border border-white/10 bg-[#0a1826]/95 p-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
             >
-              <div className="p-3 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent-2/20 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{profile?.username ?? "Your name"}</p>
-                    <p className="text-xs text-foreground/50 truncate max-w-[160px]">@{profile?.userId ?? "userid"}</p>
-                  </div>
+              <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 bg-gradient-to-br from-white/20 to-white/5">
+                  <User size={22} weight="regular" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-base font-medium text-white">
+                    {profile?.username ?? "Guest"}
+                  </p>
+                  {profile?.userId && (
+                    <p className="truncate text-xs text-foreground-muted">
+                      @{profile.userId}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <motion.nav
-                initial={reduce ? false : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ staggerChildren: reduce ? 0 : 0.05, delayChildren: reduce ? 0 : 0.1 }}
-                className="py-2"
-              >
+              <div className="py-2">
                 <Link
-                  href="/home"
+                  href="/onboarding"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:text-foreground rounded-xl mx-2 hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-white/5 hover:text-white"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <polyline points="9 22 9 12 15 12 15 22" />
-                  </svg>
-                  <span>Home</span>
+                  <PencilSimple size={16} weight="regular" aria-hidden="true" />
+                  Edit profile
                 </Link>
+              </div>
 
-                <Link
-                  href="/home"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:text-foreground rounded-xl mx-2 hover:bg-white/5 transition-colors"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <span>Profile</span>
-                </Link>
-
-                <hr className="my-2 border-white/10 mx-2" />
-
-                <motion.button
+              <div className="border-t border-white/10 pt-2">
+                <button
+                  type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-white/5 rounded-xl mx-2 transition-colors"
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
+                  className="flex w-full items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-white/5 hover:text-white"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                  <span>Log out</span>
-                </motion.button>
-              </motion.nav>
+                  <SignOut size={16} weight="regular" aria-hidden="true" />
+                  Log out
+                </button>
+              </div>
             </motion.div>
           </>
         )}

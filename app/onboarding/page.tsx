@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { apiFetch, ApiRequestError } from "@/src/lib/api/client";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -13,27 +14,45 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Spec: Google sign-up lands here with the username prefilled (editable).
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ profile: { username?: string | null; userId?: string | null } | null }>("/api/auth/session")
+      .then(({ data }) => {
+        const prefilled = data.profile?.username;
+        if (!cancelled && typeof prefilled === "string" && prefilled.trim()) {
+          setUsername((current) => current || prefilled);
+        }
+        if (!cancelled && data.profile?.userId) setUserId(current => current || data.profile!.userId!);
+      })
+      .catch(() => {
+        // Session unavailable: leave the form empty rather than blocking onboarding.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       const sanitizedUserId = userId.replace(/^@/, "").trim();
-      const res = await fetch("/api/profiles/me", {
+      await apiFetch("/api/profiles/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: username.trim(),
           userId: sanitizedUserId || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error?.message ?? "Unable to save profile");
-      }
       router.push("/home");
       router.refresh();
     } catch (err) {
+      if (err instanceof ApiRequestError && err.status === 401) {
+        router.push("/signin");
+        return;
+      }
       setError(err instanceof Error ? err.message : "Profile setup failed. Please try again.");
     } finally {
       setLoading(false);
@@ -221,10 +240,10 @@ export default function OnboardingPage() {
           className="mt-8 text-center text-xs text-foreground-subtle"
         >
           <Link
-            href="/home"
+            href="/signin"
             className="text-foreground-subtle/60 hover:text-foreground-subtle hover:underline transition-colors"
           >
-            Skip identifier configuration for now →
+            Back to sign in
           </Link>
         </motion.p>
       </motion.section>

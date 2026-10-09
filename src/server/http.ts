@@ -1,11 +1,12 @@
-import { ValidationError } from "@/src/lib/api/errors";
+import { ApiError, ValidationError } from "@/src/lib/api/errors";
 
 export async function readJson(req: Request): Promise<Record<string, unknown>> {
   try {
     const b = await req.json();
-    return typeof b === "object" && b !== null ? (b as Record<string, unknown>) : {};
+    if (typeof b !== "object" || b === null || Array.isArray(b)) throw new ApiError(400, "bad_request", "Expected a JSON object");
+    return b as Record<string, unknown>;
   } catch {
-    return {};
+    throw new ApiError(400, "bad_request", "Expected a valid JSON object");
   }
 }
 
@@ -37,9 +38,9 @@ export function requireString(body: Record<string, unknown>, field: string): str
 export function optionalString(
   body: Record<string, unknown>,
   field: string,
-): string | undefined {
+): string | null | undefined {
   const v = body[field];
-  if (v === undefined || v === null) return undefined;
+  if (v === undefined || v === null) return v;
   if (typeof v !== "string") throw new ValidationError(`${field} must be a string`);
   return v;
 }
@@ -52,8 +53,8 @@ export function optionalInt(
 ): number | undefined {
   const v = body[field];
   if (v === undefined || v === null) return undefined;
-  if (typeof v !== "number" || !Number.isFinite(v)) {
-    throw new ValidationError(`${field} must be a number`);
+  if (typeof v !== "number" || !Number.isInteger(v)) {
+    throw new ValidationError(`${field} must be an integer`);
   }
   if (min !== undefined && v < min) throw new ValidationError(`${field} must be >= ${min}`);
   if (max !== undefined && v > max) throw new ValidationError(`${field} must be <= ${max}`);

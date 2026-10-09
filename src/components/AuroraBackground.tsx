@@ -253,6 +253,9 @@ export default function AuroraBackground() {
     }
   }, []);
 
+  // Opaque writing surfaces do not need a continuously rendered scene behind them.
+  if (pathname.startsWith("/books/") || pathname.startsWith("/worlds/")) return null;
+
   if (mode === "static") {
     return (
       <div

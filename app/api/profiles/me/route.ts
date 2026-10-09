@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { errorResponse, ValidationError } from "@/src/lib/api/errors";
 import { getContext } from "@/src/server/context";
-import { optionalName, readJson } from "@/src/server/http";
+import { readJson } from "@/src/server/http";
 import { ProfileRepositoryImpl } from "@/src/server/repositories/supabase-profile";
 import { profileService } from "@/src/server/services";
 
@@ -19,7 +19,13 @@ export async function PATCH(req: Request) {
   try {
     const c = await getContext(req);
     const body = await readJson(req);
-    const username = optionalName(body);
+    let username: string | undefined;
+    if (body.username !== undefined) {
+      if (typeof body.username !== "string" || body.username.trim().length === 0) {
+        throw new ValidationError("username must be a non-empty string");
+      }
+      username = body.username;
+    }
     let userId: string | undefined;
     if (body.userId !== undefined) {
       if (typeof body.userId !== "string") {

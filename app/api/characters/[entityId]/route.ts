@@ -21,7 +21,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     const patch: Record<string, unknown> = {};
     const name = optionalName(body);
     if (name !== undefined) patch.name = name;
-    if (body.age !== undefined) patch.age = optionalInt(body, "age", 0);
+    if (body.age !== undefined) patch.age = body.age === null ? null : optionalInt(body, "age", 0);
     if (body.health !== undefined) patch.health = optionalString(body, "health");
     if (body.distinctions !== undefined) patch.distinctions = optionalString(body, "distinctions");
     if (body.traits !== undefined) patch.traits = optionalString(body, "traits");
