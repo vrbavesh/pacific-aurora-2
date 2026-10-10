@@ -32,7 +32,6 @@ import {
   read,
   write,
 } from "./shared";
-import { touchSection } from "@/src/lib/sectionRecency";
 
 type Kind = "characters" | "places" | "items" | "custom-entities";
 type Entity = Character & Place & Item & CustomEntity;
@@ -204,12 +203,6 @@ export default function WorldEntities({
                   <button
                     className="min-w-0 flex-1 py-2 text-left hover:text-accent"
                     onClick={() => {
-                      touchSection(
-                        worldId,
-                        section.type
-                          ? `custom:${section.type.id}`
-                          : section.kind,
-                      );
                       setSelected({
                         kind: section.kind,
                         entity,

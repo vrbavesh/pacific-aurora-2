@@ -623,7 +623,8 @@ export const GetWorldsWorldIdCharactersResponse = zod.object({
   "traits": zod.string().nullish(),
   "mutations": zod.string().nullish(),
   "status": zod.enum(['alive', 'dead']).optional(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 })).optional()
 })
 
@@ -661,7 +662,8 @@ export const PostWorldsWorldIdCharactersResponse = zod.object({
   "traits": zod.string().nullish(),
   "mutations": zod.string().nullish(),
   "status": zod.enum(['alive', 'dead']).optional(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -699,7 +701,8 @@ export const PatchCharactersEntityIdResponse = zod.object({
   "traits": zod.string().nullish(),
   "mutations": zod.string().nullish(),
   "status": zod.enum(['alive', 'dead']).optional(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -726,7 +729,8 @@ export const GetWorldsWorldIdPlacesResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "status": zod.string().nullish(),
-  "lastChapterId": zod.string().nullish()
+  "lastChapterId": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 })).optional()
 })
 
@@ -752,7 +756,8 @@ export const PostWorldsWorldIdPlacesResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "status": zod.string().nullish(),
-  "lastChapterId": zod.string().nullish()
+  "lastChapterId": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -775,7 +780,8 @@ export const PatchPlacesEntityIdResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "status": zod.string().nullish(),
-  "lastChapterId": zod.string().nullish()
+  "lastChapterId": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -801,7 +807,8 @@ export const GetWorldsWorldIdItemsResponse = zod.object({
   "status": zod.string().nullish(),
   "power": zod.string().nullish(),
   "wielderEntityId": zod.string().nullish(),
-  "manualWielderName": zod.string().nullish()
+  "manualWielderName": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 })).optional()
 })
 
@@ -831,7 +838,8 @@ export const PostWorldsWorldIdItemsResponse = zod.object({
   "status": zod.string().nullish(),
   "power": zod.string().nullish(),
   "wielderEntityId": zod.string().nullish(),
-  "manualWielderName": zod.string().nullish()
+  "manualWielderName": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -858,7 +866,8 @@ export const PatchItemsEntityIdResponse = zod.object({
   "status": zod.string().nullish(),
   "power": zod.string().nullish(),
   "wielderEntityId": zod.string().nullish(),
-  "manualWielderName": zod.string().nullish()
+  "manualWielderName": zod.string().nullish(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -882,7 +891,8 @@ export const GetWorldsWorldIdCustomEntityTypesResponse = zod.object({
   "id": zod.string().optional(),
   "worldId": zod.string().optional(),
   "name": zod.string().optional(),
-  "position": zod.int().optional()
+  "position": zod.int().optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 })).optional()
 })
 
@@ -909,7 +919,8 @@ export const PostWorldsWorldIdCustomEntityTypesResponse = zod.object({
   "id": zod.string().optional(),
   "worldId": zod.string().optional(),
   "name": zod.string().optional(),
-  "position": zod.int().optional()
+  "position": zod.int().optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -959,7 +970,8 @@ export const PatchCustomEntityTypesTypeIdResponse = zod.object({
   "id": zod.string().optional(),
   "worldId": zod.string().optional(),
   "name": zod.string().optional(),
-  "position": zod.int().optional()
+  "position": zod.int().optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -1037,7 +1049,8 @@ export const GetWorldsWorldIdCustomEntitiesResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "entityTypeId": zod.string().optional(),
-  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+  "attributes": zod.record(zod.string(), zod.unknown()).optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 })).optional()
 })
 
@@ -1063,7 +1076,8 @@ export const PostWorldsWorldIdCustomEntitiesResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "entityTypeId": zod.string().optional(),
-  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+  "attributes": zod.record(zod.string(), zod.unknown()).optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 
@@ -1085,7 +1099,8 @@ export const PatchCustomEntitiesEntityIdResponse = zod.object({
   "entityId": zod.string().optional(),
   "name": zod.string().optional(),
   "entityTypeId": zod.string().optional(),
-  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+  "attributes": zod.record(zod.string(), zod.unknown()).optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).optional()
 }).optional()
 })
 

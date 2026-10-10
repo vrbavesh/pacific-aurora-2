@@ -35,10 +35,17 @@ interface WorldSectionsProps {
 interface SectionModel {
   key: string;
   label: string;
+  updatedAt?: string;
   entities: { id: string; name: string }[];
 }
 
 const GRID = "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5";
+
+function newest(values: Array<string | null | undefined>): string | undefined {
+  return values
+    .filter((value): value is string => Boolean(value))
+    .sort((a, b) => Date.parse(b) - Date.parse(a))[0];
+}
 
 function Skeleton() {
   return (
@@ -128,6 +135,7 @@ export default function WorldSections({
     {
       key: "characters",
       label: "Characters",
+      updatedAt: newest(details.characters.map((entity) => entity.updatedAt)),
       entities: details.characters.map((character) => ({
         id: character.entityId ?? "",
         name: character.name ?? "",
@@ -136,6 +144,7 @@ export default function WorldSections({
     {
       key: "places",
       label: "Places",
+      updatedAt: newest(details.places.map((entity) => entity.updatedAt)),
       entities: details.places.map((place) => ({
         id: place.entityId ?? "",
         name: place.name ?? "",
@@ -144,6 +153,7 @@ export default function WorldSections({
     {
       key: "items",
       label: "Items",
+      updatedAt: newest(details.items.map((entity) => entity.updatedAt)),
       entities: details.items.map((item) => ({
         id: item.entityId ?? "",
         name: item.name ?? "",
@@ -154,17 +164,22 @@ export default function WorldSections({
       .map((type) => ({
         key: `custom:${type.id}`,
         label: type.name ?? "Custom",
+        updatedAt: newest([
+          type.updatedAt,
+          ...details.customEntities
+            .filter((entity) => entity.entityTypeId === type.id)
+            .map((entity) => entity.updatedAt),
+        ]),
         entities: details.customEntities
           .filter((entity) => entity.entityTypeId === type.id)
           .map((entity) => ({ id: entity.entityId ?? "", name: entity.name ?? "" })),
       })),
   ];
 
-  // At most 4 sections on the home screen: the most recently accessed ones.
+  // At most 4 sections on the home screen, ordered by database recency.
   const visibleSections = selectVisibleSections(
-    anchorWorld.id ?? "",
     pool,
-    (section) => section.key,
+    (section) => section.updatedAt,
     4,
   );
 

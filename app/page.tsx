@@ -83,7 +83,7 @@ function EntityPreview({
           {label}
         </span>
 
-        <span className="text-xs text-white/30">world entity</span>
+        <span className="text-xs text-white/65">world entity</span>
       </div>
 
       <h3 className="text-xl font-serif text-white">{title}</h3>
@@ -117,7 +117,7 @@ function ProductMockup() {
           <span className="h-2 w-2 rounded-full bg-white/20" />
         </div>
 
-        <div className="mx-auto border border-white/5 bg-white/[0.025] px-8 py-1 text-[9px] tracking-wider text-white/30">
+        <div className="mx-auto border border-white/5 bg-white/[0.025] px-8 py-1 text-[9px] tracking-wider text-white/65">
           pacific-aurora / emberfall
         </div>
       </div>
@@ -125,19 +125,19 @@ function ProductMockup() {
       <div className="grid min-h-[520px] grid-cols-[180px_1fr] md:grid-cols-[210px_1fr]">
         <aside className="border-r border-white/10 bg-black/10 p-4">
           <div className="mb-7">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
               Books
             </p>
 
             <div className="mt-3 bg-[#2dd4bf]/10 px-3 py-2.5">
               <p className="text-xs text-[#b8f4eb]">Emberfall</p>
-              <p className="mt-1 text-[9px] text-white/30">4 chapters</p>
+              <p className="mt-1 text-[9px] text-white/65">4 chapters</p>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+              <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
                 Worlds
               </p>
               <span className="text-xs text-[#2dd4bf]">+</span>
@@ -145,7 +145,7 @@ function ProductMockup() {
 
             <div className="mt-3 border border-white/5 px-3 py-2.5">
               <p className="text-xs text-white/70">Aurora</p>
-              <p className="mt-1 text-[9px] text-white/30">
+              <p className="mt-1 text-[9px] text-white/65">
                 12 entities
               </p>
             </div>
@@ -155,10 +155,10 @@ function ProductMockup() {
             {["Characters", "Places", "Items", "Custom"].map((item) => (
               <div
                 key={item}
-                className="flex items-center justify-between px-3 py-2 text-[10px] text-white/40"
+                className="flex items-center justify-between px-3 py-2 text-[10px] text-white/65"
               >
                 <span>{item}</span>
-                <span className="text-white/20">›</span>
+                <span className="text-white/65">›</span>
               </div>
             ))}
           </div>
@@ -169,16 +169,16 @@ function ProductMockup() {
             <span className="border-b border-[#2dd4bf] pb-3 text-[#9cece1]">
               Writer
             </span>
-            <span className="text-white/35">World</span>
-            <span className="text-white/35">Relationships</span>
-            <span className="text-white/35">Timeline</span>
+            <span className="text-white/65">World</span>
+            <span className="text-white/65">Relationships</span>
+            <span className="text-white/65">Timeline</span>
           </div>
 
           <div className="grid min-h-[465px] grid-cols-[1fr_235px]">
             <div className="border-r border-white/10 p-6 md:p-8">
               <div className="mb-7 flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
                     Chapter 3
                   </p>
                   <h3 className="mt-1 font-serif text-lg text-white">
@@ -186,7 +186,7 @@ function ProductMockup() {
                   </h3>
                 </div>
 
-                <span className="text-[9px] text-white/25">
+                <span className="text-[9px] text-white/65">
                   1,842 words
                 </span>
               </div>
@@ -216,7 +216,7 @@ function ProductMockup() {
                   </span>
                 </div>
 
-                <p className="mt-2 text-[10px] leading-5 text-white/45">
+                <p className="mt-2 text-[10px] leading-5 text-white/65">
                   Keep your manuscript connected to the world while you write.
                 </p>
               </div>
@@ -224,7 +224,7 @@ function ProductMockup() {
 
             <aside className="bg-black/10 p-4">
               <div className="flex items-center justify-between">
-                <p className="text-[9px] uppercase tracking-[0.18em] text-white/35">
+                <p className="text-[9px] uppercase tracking-[0.18em] text-white/65">
                   World information
                 </p>
               </div>
@@ -238,17 +238,17 @@ function ProductMockup() {
                   Ashen Blade
                 </p>
 
-                <p className="mt-2 text-[10px] leading-5 text-white/40">
+                <p className="mt-2 text-[10px] leading-5 text-white/65">
                   Existing world item referenced in the chapter.
                 </p>
               </div>
 
-              <div className="mt-3 border border-white/10 bg-white/[0.025] p-4 opacity-60">
-                <p className="text-[9px] uppercase tracking-[0.15em] text-white/35">
+              <div className="mt-3 border border-white/10 bg-white/[0.025] p-4">
+                <p className="text-[9px] uppercase tracking-[0.15em] text-white/65">
                   Character
                 </p>
                 <p className="mt-2 text-xs text-white">Marcus</p>
-                <p className="mt-2 text-[10px] leading-5 text-white/35">
+                <p className="mt-2 text-[10px] leading-5 text-white/65">
                   Character timeline.
                 </p>
               </div>
@@ -275,7 +275,7 @@ function RelationshipGraph() {
       </div>
 
       <div className="relative">
-        <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+        <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
           World relationships
         </p>
 
@@ -321,14 +321,14 @@ function RelationshipGraph() {
           <div className="absolute left-[70%] top-[15%] -translate-x-1/2">
             <div className="border border-white/10 bg-[#0a141c] px-5 py-4">
               <p className="text-xs text-white">Marcus</p>
-              <p className="mt-1 text-[9px] text-white/30">Character</p>
+              <p className="mt-1 text-[9px] text-white/65">Character</p>
             </div>
           </div>
 
           <div className="absolute left-[50%] top-[70%] -translate-x-1/2">
             <div className="border border-white/10 bg-[#0a141c] px-5 py-4">
               <p className="text-xs text-white">Valen Guard</p>
-              <p className="mt-1 text-[9px] text-white/30">Custom entity</p>
+              <p className="mt-1 text-[9px] text-white/65">Custom entity</p>
             </div>
           </div>
 
@@ -336,7 +336,7 @@ function RelationshipGraph() {
             Family · 82
           </div>
 
-          <div className="absolute left-[30%] top-[53%] border border-white/10 bg-[#07141a] px-2 py-1 text-[8px] text-white/35">
+          <div className="absolute left-[30%] top-[53%] border border-white/10 bg-[#07141a] px-2 py-1 text-[8px] text-white/65">
             Member · 67
           </div>
         </div>
@@ -369,7 +369,7 @@ function TimelinePreview() {
     <div className="border border-white/10 bg-[#061019]/80 p-6 md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
             Character timeline
           </p>
           <h3 className="mt-2 font-serif text-2xl text-white">
@@ -397,7 +397,7 @@ function TimelinePreview() {
 
             <div>
               <p className="text-xs text-white">{chapter.name}</p>
-              <p className="mt-1 text-xs leading-5 text-white/40">
+              <p className="mt-1 text-xs leading-5 text-white/65">
                 {chapter.point}
               </p>
             </div>
@@ -405,7 +405,7 @@ function TimelinePreview() {
         ))}
       </div>
 
-      <p className="mt-5 text-xs leading-6 text-white/35">
+      <p className="mt-5 text-xs leading-6 text-white/65">
         Character timelines belong to a specific book. The character itself
         remains part of the shared world.
       </p>
@@ -569,7 +569,7 @@ export default function LandingPage() {
                         className="border border-white/10 bg-white/[0.025] p-4"
                       >
                         <p className="text-xs text-white">{item}</p>
-                        <p className="mt-2 text-[9px] text-white/30">
+                        <p className="mt-2 text-[9px] text-white/65">
                           Part of Aurora
                         </p>
                       </div>
@@ -580,13 +580,13 @@ export default function LandingPage() {
                     <p className="text-xs text-[#a9e8df]">
                       + Create a custom entity type
                     </p>
-                    <p className="mt-1 text-[9px] text-white/30">
+                    <p className="mt-1 text-[9px] text-white/65">
                       Define the kind of thing your world needs.
                     </p>
                   </div>
 
                   <div className="mt-6 border border-white/10 bg-black/10 p-4">
-                    <p className="text-[9px] uppercase tracking-[0.18em] text-white/30">
+                    <p className="text-[9px] uppercase tracking-[0.18em] text-white/65">
                       Books in this world
                     </p>
 
@@ -658,7 +658,7 @@ export default function LandingPage() {
             <div className="border border-dashed border-[#2dd4bf]/25 bg-[#07161b] p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
                     Custom entity
                   </p>
                   <h3 className="mt-2 font-serif text-2xl text-white">
@@ -683,13 +683,13 @@ export default function LandingPage() {
                     key={key}
                     className="flex items-center justify-between border border-white/5 bg-white/[0.025] px-4 py-3"
                   >
-                    <span className="text-xs text-white/40">{key}</span>
+                    <span className="text-xs text-white/65">{key}</span>
                     <span className="text-xs text-white/75">{value}</span>
                   </div>
                 ))}
               </div>
 
-              <button className="mt-4 w-full border border-dashed border-white/10 py-3 text-[10px] uppercase tracking-[0.15em] text-white/35">
+              <button className="mt-4 w-full border border-dashed border-white/10 py-3 text-[10px] uppercase tracking-[0.15em] text-white/65">
                 + Add attribute
               </button>
             </div>
@@ -730,10 +730,10 @@ export default function LandingPage() {
                   <div>
                     <p className="text-xs text-white">
                       {relationship.from}{" "}
-                      <span className="text-white/25">→</span>{" "}
+                      <span className="text-white/65">→</span>{" "}
                       {relationship.to}
                     </p>
-                    <p className="mt-1 text-[9px] text-white/30">
+                    <p className="mt-1 text-[9px] text-white/65">
                       {relationship.type}
                     </p>
                   </div>
@@ -792,10 +792,10 @@ export default function LandingPage() {
                     className="border border-white/10 bg-white/[0.02] p-4"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] uppercase tracking-[0.16em] text-white/30">
+                      <span className="text-[9px] uppercase tracking-[0.16em] text-white/65">
                         {number}
                       </span>
-                      <span className="text-[9px] text-white/25">
+                      <span className="text-[9px] text-white/65">
                         {chapters}
                       </span>
                     </div>
@@ -835,7 +835,7 @@ export default function LandingPage() {
           <div className="border border-white/10 bg-[#061019]/80 p-6 md:p-8">
             <div className="flex items-center justify-between border-b border-white/10 pb-5">
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+                <p className="text-[9px] uppercase tracking-[0.2em] text-white/65">
                   Emberfall
                 </p>
                 <h3 className="mt-1 font-serif text-xl text-white">
@@ -843,7 +843,7 @@ export default function LandingPage() {
                 </h3>
               </div>
 
-              <span className="text-[9px] text-white/30">1,842 words</span>
+              <span className="text-[9px] text-white/65">1,842 words</span>
             </div>
 
             <div className="mt-7 space-y-5 font-serif text-sm leading-8 text-white/55">
@@ -871,7 +871,7 @@ export default function LandingPage() {
                     className={`px-3 py-1.5 text-[9px] uppercase tracking-wider ${
                       index === 0
                         ? "bg-[#2dd4bf]/10 text-[#77dfd4]"
-                        : "border border-white/5 text-white/30"
+                        : "border border-white/5 text-white/65"
                     }`}
                   >
                     {tab}
@@ -954,7 +954,7 @@ export default function LandingPage() {
                   {title}
                 </h3>
 
-                <p className="mt-2 text-xs leading-5 text-white/40">
+                <p className="mt-2 text-xs leading-5 text-white/65">
                   {description}
                 </p>
               </div>
@@ -997,7 +997,7 @@ export default function LandingPage() {
                   }`}
                 >
                   <p className="text-sm text-white">{title}</p>
-                  <p className="mt-2 whitespace-pre-line text-[10px] leading-5 text-white/35">
+                  <p className="mt-2 whitespace-pre-line text-[10px] leading-5 text-white/65">
                     {description}
                   </p>
                 </div>
@@ -1036,7 +1036,7 @@ export default function LandingPage() {
               <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-5 text-sm text-white/80 marker:hidden">
                 <span>{item.q}</span>
 
-                <span className="text-xl font-light text-white/25 transition group-open:rotate-45">
+                <span className="text-xl font-light text-white/65 transition group-open:rotate-45">
                   +
                 </span>
               </summary>
@@ -1078,12 +1078,12 @@ export default function LandingPage() {
       <footer className="relative z-10 mx-auto flex max-w-7xl flex-col gap-5 border-t border-white/10 py-8 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/"
-          className="text-xs uppercase tracking-[0.22em] text-white/45"
+          className="text-xs uppercase tracking-[0.22em] text-white/65"
         >
           Pacific Aurora
         </Link>
 
-        <div className="flex gap-5 text-[10px] uppercase tracking-[0.15em] text-white/30">
+        <div className="flex gap-5 text-[10px] uppercase tracking-[0.15em] text-white/65">
           <Link href="/signin" className="transition hover:text-white/70">
             Sign in
           </Link>
@@ -1092,7 +1092,7 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <p className="text-[10px] text-white/20">
+        <p className="text-[10px] text-white/65">
           © 2026 Pacific Aurora
         </p>
       </footer>

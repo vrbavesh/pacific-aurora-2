@@ -16,7 +16,6 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -169,8 +168,6 @@ export default function SignupPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setFocusedField("email")}
-                    onBlur={() => setFocusedField(null)}
                     required
                     disabled={loading}
                     placeholder="author@pacificaurora.dev"
@@ -192,8 +189,6 @@ export default function SignupPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocusedField("password")}
-                    onBlur={() => setFocusedField(null)}
                     required
                     minLength={8}
                     disabled={loading}
@@ -235,8 +230,6 @@ export default function SignupPage() {
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    onFocus={() => setFocusedField("otp")}
-                    onBlur={() => setFocusedField(null)}
                     maxLength={6}
                     required
                     autoFocus

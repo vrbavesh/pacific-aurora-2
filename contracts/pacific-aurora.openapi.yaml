@@ -939,6 +939,7 @@ components:
         mutations: { type: string, nullable: true }
         status: { $ref: '#/components/schemas/CharacterStatus' }
         notes: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time }
     CharacterInput:
       type: object
       properties:
@@ -957,6 +958,7 @@ components:
         name: { type: string }
         status: { type: string, nullable: true }
         lastChapterId: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time }
     PlaceInput:
       type: object
       properties:
@@ -972,6 +974,7 @@ components:
         power: { type: string, nullable: true }
         wielderEntityId: { type: string, nullable: true }
         manualWielderName: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time }
     ItemInput:
       type: object
       properties:
@@ -987,6 +990,7 @@ components:
         worldId: { type: string }
         name: { type: string }
         position: { type: integer }
+        updatedAt: { type: string, format: date-time }
     CustomEntityAttribute:
       type: object
       properties:
@@ -1004,6 +1008,7 @@ components:
         name: { type: string }
         entityTypeId: { type: string }
         attributes: { type: object, additionalProperties: true }
+        updatedAt: { type: string, format: date-time }
     Relationship:
       type: object
       properties:

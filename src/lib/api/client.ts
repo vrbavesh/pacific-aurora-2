@@ -39,11 +39,13 @@ export async function apiFetch<T = unknown>(
 
   const res = await fetch(path, { ...init, headers });
   const text = await res.text();
+  let parsedBody: unknown = undefined;
   let json:
     | { data?: T; error?: { code?: string; message?: string } }
     | null = null;
   try {
-    const parsed = text ? JSON.parse(text) : null;
+    const parsed = text ? JSON.parse(text) : undefined;
+    parsedBody = parsed;
     if (
       parsed &&
       typeof parsed === "object" &&
@@ -64,6 +66,16 @@ export async function apiFetch<T = unknown>(
       : undefined;
     throw new ApiRequestError(res.status, errMsg, errCode);
   }
+  const { validateSuccessResponse } = await import("./response-validation");
+  const validated = validateSuccessResponse(
+    path,
+    init.method ?? "GET",
+    parsedBody,
+  );
+  json =
+    validated && typeof validated === "object"
+      ? (validated as typeof json)
+      : null;
   const data = json && typeof json === "object" && "data" in json ? (json.data as T) : ({} as T);
   return { data };
 }

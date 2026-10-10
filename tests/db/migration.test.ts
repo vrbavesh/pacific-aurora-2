@@ -5,6 +5,10 @@ const SQL = readFileSync(
   "supabase/migrations/0001_pacific_aurora.sql",
   "utf8",
 );
+const ATOMIC_SQL = readFileSync(
+  "supabase/migrations/0002_atomic_writes.sql",
+  "utf8",
+);
 
 const TABLES = [
   "profiles",
@@ -83,4 +87,22 @@ test("generates id defaults and the automatic Introduction chapter trigger", () 
   expect(SQL).toContain("gen_random_uuid()");
   expect(SQL).toContain("on_book_created");
   expect(SQL).toContain("'Introduction'");
+});
+
+test("atomic write migration keeps RLS active through security-invoker RPCs", () => {
+  for (const fn of [
+    "move_chapter_atomic",
+    "create_world_entity_atomic",
+    "update_world_entity_atomic",
+  ]) {
+    expect(ATOMIC_SQL).toContain(`function public.${fn}`);
+  }
+  expect(ATOMIC_SQL.match(/security invoker/g)).toHaveLength(4);
+  expect(ATOMIC_SQL).not.toContain("security definer");
+  expect(ATOMIC_SQL).toContain("from public.books");
+  expect(ATOMIC_SQL).toContain("for update;");
+  expect(ATOMIC_SQL).toContain("validate_custom_entity_attribute_values");
+  expect(ATOMIC_SQL).toContain(
+    "grant execute on function public.move_chapter_atomic",
+  );
 });

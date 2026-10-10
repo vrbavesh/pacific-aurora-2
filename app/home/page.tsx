@@ -12,7 +12,6 @@ import PromptDialog from "@/src/components/home/PromptDialog";
 import SidebarNav from "@/src/components/home/SidebarNav";
 import WorldSections, { type WorldDetails } from "@/src/components/home/WorldSections";
 import { ApiRequestError, apiFetch, getToken } from "@/src/lib/api/client";
-import { touchSection } from "@/src/lib/sectionRecency";
 import type {
   Book,
   Character,
@@ -188,9 +187,8 @@ export default function Home() {
     void pingAndGo(`/api/worlds/${world.id}/open`, `/worlds/${world.id}`);
   };
 
-  const handleOpenEntity = (sectionKey: string) => {
+  const handleOpenEntity = () => {
     if (!anchorWorld?.id) return;
-    touchSection(anchorWorld.id, sectionKey);
     // Books list is ordered most recently opened first.
     const linked = (booksByWorld[anchorWorld.id] ?? []).find((book) => book.id);
     if (linked?.id) {

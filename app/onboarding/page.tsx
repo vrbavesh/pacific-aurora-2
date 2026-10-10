@@ -12,7 +12,6 @@ export default function OnboardingPage() {
   const [userId, setUserId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Spec: Google sign-up lands here with the username prefilled (editable).
   useEffect(() => {
@@ -132,8 +131,6 @@ export default function OnboardingPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              onFocus={() => setFocusedField("username")}
-              onBlur={() => setFocusedField(null)}
               maxLength={50}
               required
               disabled={loading}
@@ -173,8 +170,6 @@ export default function OnboardingPage() {
                 type="text"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))}
-                onFocus={() => setFocusedField("userId")}
-                onBlur={() => setFocusedField(null)}
                 maxLength={30}
                 required
                 disabled={loading}

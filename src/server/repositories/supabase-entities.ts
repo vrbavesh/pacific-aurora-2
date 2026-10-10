@@ -40,8 +40,25 @@ function joinedName(r: Row): string | undefined {
   return Array.isArray(we) ? pick(we[0]) : pick(we);
 }
 
+function joinedUpdatedAt(r: Row): string | undefined {
+  const we = r.world_entities as
+    | { updated_at?: unknown }
+    | { updated_at?: unknown }[]
+    | null
+    | undefined;
+  const pick = (o: { updated_at?: unknown } | null | undefined) =>
+    s(o?.updated_at);
+  return Array.isArray(we) ? pick(we[0]) : pick(we);
+}
+
 function firstErr(error: { message?: string } | null) {
   if (error) throw new Error(error.message ?? "Supabase error");
+}
+
+function rpcId(data: unknown): string {
+  const id = s(data);
+  if (!id) throw new Error("Atomic entity write did not return an id");
+  return id;
 }
 
 // ---------- Character ----------
@@ -56,11 +73,12 @@ function toCharacter(r: Row): Character {
     mutations: s(r.mutations),
     status: (s(r.status) ?? "alive") as Character["status"],
     notes: s(r.notes),
+    updatedAt: joinedUpdatedAt(r),
   };
 }
 
 const CHARACTER_SELECT =
-  "entity_id,age,health,distinctions,traits,mutations,status,notes,world_entities(name,world_id)";
+  "entity_id,age,health,distinctions,traits,mutations,status,notes,world_entities(name,world_id,updated_at)";
 
 export class CharacterRepositoryImpl implements CharacterRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -100,62 +118,41 @@ export class CharacterRepositoryImpl implements CharacterRepository {
     worldId: string,
     input: Omit<Character, "entityId">,
   ): Promise<Character> {
-    const { data: we, error: e1 } = await this.supabase
-      .from("world_entities")
-      .insert({ world_id: worldId, kind: "character", name: input.name })
-      .select()
-      .single();
-    firstErr(e1);
-    const { data: ch, error: e2 } = await this.supabase
-      .from("characters")
-      .insert({
-        entity_id: we.id,
-        age: input.age ?? null,
-        health: input.health ?? null,
-        distinctions: input.distinctions ?? null,
-        traits: input.traits ?? null,
-        mutations: input.mutations ?? null,
-        status: input.status ?? "alive",
-        notes: input.notes ?? null,
-      })
-      .select(CHARACTER_SELECT)
-      .single();
-    firstErr(e2);
-    return toCharacter(ch as Row);
+    const { data, error } = await this.supabase.rpc(
+      "create_world_entity_atomic",
+      {
+        target_world_id: worldId,
+        target_kind: "character",
+        target_name: input.name,
+        subtype_data: {
+          age: input.age ?? null,
+          health: input.health ?? null,
+          distinctions: input.distinctions ?? null,
+          traits: input.traits ?? null,
+          mutations: input.mutations ?? null,
+          status: input.status ?? "alive",
+          notes: input.notes ?? null,
+        },
+      },
+    );
+    firstErr(error);
+    const created = await this.get(rpcId(data));
+    if (!created) throw new Error("Created character could not be loaded");
+    return created;
   }
   async update(
     entityId: string,
     patch: Partial<Omit<Character, "entityId">>,
   ): Promise<Character> {
-    if (patch.name !== undefined) {
-      const { error } = await this.supabase
-        .from("world_entities")
-        .update({ name: patch.name })
-        .eq("id", entityId);
-      firstErr(error);
-    }
-    const rest: Record<string, unknown> = {};
-    if (patch.age !== undefined) rest.age = patch.age;
-    if (patch.health !== undefined) rest.health = patch.health;
-    if (patch.distinctions !== undefined) rest.distinctions = patch.distinctions;
-    if (patch.traits !== undefined) rest.traits = patch.traits;
-    if (patch.mutations !== undefined) rest.mutations = patch.mutations;
-    if (patch.status !== undefined) rest.status = patch.status;
-    if (patch.notes !== undefined) rest.notes = patch.notes;
-    if (Object.keys(rest).length > 0) {
-      const { error } = await this.supabase
-        .from("characters")
-        .update(rest)
-        .eq("entity_id", entityId);
-      firstErr(error);
-    }
-    const { data, error } = await this.supabase
-      .from("characters")
-      .select(CHARACTER_SELECT)
-      .eq("entity_id", entityId)
-      .single();
+    const { data, error } = await this.supabase.rpc(
+      "update_world_entity_atomic",
+      { target_entity_id: entityId, patch },
+    );
     firstErr(error);
-    return toCharacter(data as Row);
+    rpcId(data);
+    const updated = await this.get(entityId);
+    if (!updated) throw new Error("Updated character could not be loaded");
+    return updated;
   }
   async remove(entityId: string): Promise<void> {
     const { error } = await this.supabase
@@ -173,10 +170,12 @@ function toPlace(r: Row): Place {
     name: joinedName(r) ?? "",
     status: s(r.status),
     lastChapterId: snull(r.last_chapter_id),
+    updatedAt: joinedUpdatedAt(r),
   };
 }
 
-const PLACE_SELECT = "entity_id,status,last_chapter_id,world_entities(name,world_id)";
+const PLACE_SELECT =
+  "entity_id,status,last_chapter_id,world_entities(name,world_id,updated_at)";
 
 export class PlaceRepositoryImpl implements PlaceRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -203,52 +202,36 @@ export class PlaceRepositoryImpl implements PlaceRepository {
     return data ? toPlace(data as Row) : null;
   }
   async create(worldId: string, input: Omit<Place, "entityId">): Promise<Place> {
-    const { data: we, error: e1 } = await this.supabase
-      .from("world_entities")
-      .insert({ world_id: worldId, kind: "place", name: input.name })
-      .select()
-      .single();
-    firstErr(e1);
-    const { data: p, error: e2 } = await this.supabase
-      .from("places")
-      .insert({
-        entity_id: we.id,
-        status: input.status ?? null,
-        last_chapter_id: input.lastChapterId ?? null,
-      })
-      .select(PLACE_SELECT)
-      .single();
-    firstErr(e2);
-    return toPlace(p as Row);
+    const { data, error } = await this.supabase.rpc(
+      "create_world_entity_atomic",
+      {
+        target_world_id: worldId,
+        target_kind: "place",
+        target_name: input.name,
+        subtype_data: {
+          status: input.status ?? null,
+          lastChapterId: input.lastChapterId ?? null,
+        },
+      },
+    );
+    firstErr(error);
+    const created = await this.get(rpcId(data));
+    if (!created) throw new Error("Created place could not be loaded");
+    return created;
   }
   async update(
     entityId: string,
     patch: Partial<Omit<Place, "entityId">>,
   ): Promise<Place> {
-    if (patch.name !== undefined) {
-      const { error } = await this.supabase
-        .from("world_entities")
-        .update({ name: patch.name })
-        .eq("id", entityId);
-      firstErr(error);
-    }
-    const rest: Record<string, unknown> = {};
-    if (patch.status !== undefined) rest.status = patch.status;
-    if (patch.lastChapterId !== undefined) rest.last_chapter_id = patch.lastChapterId;
-    if (Object.keys(rest).length > 0) {
-      const { error } = await this.supabase
-        .from("places")
-        .update(rest)
-        .eq("entity_id", entityId);
-      firstErr(error);
-    }
-    const { data, error } = await this.supabase
-      .from("places")
-      .select(PLACE_SELECT)
-      .eq("entity_id", entityId)
-      .single();
+    const { data, error } = await this.supabase.rpc(
+      "update_world_entity_atomic",
+      { target_entity_id: entityId, patch },
+    );
     firstErr(error);
-    return toPlace(data as Row);
+    rpcId(data);
+    const updated = await this.get(entityId);
+    if (!updated) throw new Error("Updated place could not be loaded");
+    return updated;
   }
   async remove(entityId: string): Promise<void> {
     const { error } = await this.supabase
@@ -268,11 +251,12 @@ function toItem(r: Row): Item {
     power: s(r.power),
     wielderEntityId: snull(r.wielder_entity_id),
     manualWielderName: snull(r.manual_wielder_name),
+    updatedAt: joinedUpdatedAt(r),
   };
 }
 
 const ITEM_SELECT =
-  "entity_id,status,power,wielder_entity_id,manual_wielder_name,world_entities(name,world_id)";
+  "entity_id,status,power,wielder_entity_id,manual_wielder_name,world_entities(name,world_id,updated_at)";
 
 export class ItemRepositoryImpl implements ItemRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -297,60 +281,38 @@ export class ItemRepositoryImpl implements ItemRepository {
     return data ? toItem(data as Row) : null;
   }
   async create(worldId: string, input: Omit<Item, "entityId">): Promise<Item> {
-    const { data: we, error: e1 } = await this.supabase
-      .from("world_entities")
-      .insert({ world_id: worldId, kind: "item", name: input.name })
-      .select()
-      .single();
-    firstErr(e1);
-    const { data: it, error: e2 } = await this.supabase
-      .from("items")
-      .insert({
-        entity_id: we.id,
-        status: input.status ?? null,
-        power: input.power ?? null,
-        wielder_entity_id: input.wielderEntityId ?? null,
-        manual_wielder_name: input.manualWielderName?.trim() ? input.manualWielderName : null,
-      })
-      .select(ITEM_SELECT)
-      .single();
-    firstErr(e2);
-    return toItem(it as Row);
+    const { data, error } = await this.supabase.rpc(
+      "create_world_entity_atomic",
+      {
+        target_world_id: worldId,
+        target_kind: "item",
+        target_name: input.name,
+        subtype_data: {
+          status: input.status ?? null,
+          power: input.power ?? null,
+          wielderEntityId: input.wielderEntityId ?? null,
+          manualWielderName: input.manualWielderName ?? null,
+        },
+      },
+    );
+    firstErr(error);
+    const created = await this.get(rpcId(data));
+    if (!created) throw new Error("Created item could not be loaded");
+    return created;
   }
   async update(
     entityId: string,
     patch: Partial<Omit<Item, "entityId">>,
   ): Promise<Item> {
-    if (patch.name !== undefined) {
-      const { error } = await this.supabase
-        .from("world_entities")
-        .update({ name: patch.name })
-        .eq("id", entityId);
-      firstErr(error);
-    }
-    const rest: Record<string, unknown> = {};
-    if (patch.status !== undefined) rest.status = patch.status;
-    if (patch.power !== undefined) rest.power = patch.power;
-    if (patch.wielderEntityId !== undefined) rest.wielder_entity_id = patch.wielderEntityId;
-    if (patch.manualWielderName !== undefined) {
-      rest.manual_wielder_name = patch.manualWielderName?.trim()
-        ? patch.manualWielderName
-        : null;
-    }
-    if (Object.keys(rest).length > 0) {
-      const { error } = await this.supabase
-        .from("items")
-        .update(rest)
-        .eq("entity_id", entityId);
-      firstErr(error);
-    }
-    const { data, error } = await this.supabase
-      .from("items")
-      .select(ITEM_SELECT)
-      .eq("entity_id", entityId)
-      .single();
+    const { data, error } = await this.supabase.rpc(
+      "update_world_entity_atomic",
+      { target_entity_id: entityId, patch },
+    );
     firstErr(error);
-    return toItem(data as Row);
+    rpcId(data);
+    const updated = await this.get(entityId);
+    if (!updated) throw new Error("Updated item could not be loaded");
+    return updated;
   }
   async remove(entityId: string): Promise<void> {
     const { error } = await this.supabase
@@ -363,7 +325,13 @@ export class ItemRepositoryImpl implements ItemRepository {
 
 // ---------- Custom entity types + entities ----------
 function toType(r: Row): CustomEntityType {
-  return { id: s(r.id), worldId: s(r.world_id), name: s(r.name), position: n(r.position) };
+  return {
+    id: s(r.id),
+    worldId: s(r.world_id),
+    name: s(r.name),
+    position: n(r.position),
+    updatedAt: s(r.updated_at),
+  };
 }
 function toAttr(r: Row): CustomEntityAttribute {
   return {
@@ -382,11 +350,12 @@ function toCustomEntity(r: Row): CustomEntity {
     name: joinedName(r) ?? "",
     entityTypeId: s(r.entity_type_id),
     attributes: (r.attributes ?? {}) as CustomEntity["attributes"],
+    updatedAt: joinedUpdatedAt(r),
   };
 }
 
 const CUSTOM_ENTITY_SELECT =
-  "entity_id,entity_type_id,attributes,world_entities(name,world_id)";
+  "entity_id,entity_type_id,attributes,world_entities(name,world_id,updated_at)";
 
 export class CustomEntityTypeRepositoryImpl implements CustomEntityTypeRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -473,42 +442,40 @@ export class CustomEntityTypeRepositoryImpl implements CustomEntityTypeRepositor
       .map(toCustomEntity);
   }
   async createEntity(worldId: string, entityTypeId: string, name: string, attributes?: Record<string, unknown>): Promise<CustomEntity> {
-    const { data: we, error: e1 } = await this.supabase
-      .from("world_entities")
-      .insert({ world_id: worldId, kind: "custom", name })
-      .select()
-      .single();
-    firstErr(e1);
-    const { data: ce, error: e2 } = await this.supabase
-      .from("custom_entities")
-      .insert({ entity_id: we.id, entity_type_id: entityTypeId, attributes: attributes ?? {} })
-      .select(CUSTOM_ENTITY_SELECT)
-      .single();
-    firstErr(e2);
-    return toCustomEntity(ce as Row);
+    const { data, error } = await this.supabase.rpc(
+      "create_world_entity_atomic",
+      {
+        target_world_id: worldId,
+        target_kind: "custom",
+        target_name: name,
+        subtype_data: {
+          entityTypeId,
+          attributes: attributes ?? {},
+        },
+      },
+    );
+    firstErr(error);
+    const id = rpcId(data);
+    const created = (await this.listEntities(worldId)).find(
+      (entity) => entity.entityId === id,
+    );
+    if (!created) throw new Error("Created custom entity could not be loaded");
+    return created;
   }
   async updateEntity(entityId: string, patch: Partial<Pick<CustomEntity, "name" | "attributes">>): Promise<CustomEntity> {
-    if (patch.name !== undefined) {
-      const { error } = await this.supabase
-        .from("world_entities")
-        .update({ name: patch.name })
-        .eq("id", entityId);
-      firstErr(error);
-    }
-    if (patch.attributes !== undefined) {
-      const { error } = await this.supabase
-        .from("custom_entities")
-        .update({ attributes: patch.attributes })
-        .eq("entity_id", entityId);
-      firstErr(error);
-    }
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabase.rpc(
+      "update_world_entity_atomic",
+      { target_entity_id: entityId, patch },
+    );
+    firstErr(error);
+    rpcId(data);
+    const { data: row, error: loadError } = await this.supabase
       .from("custom_entities")
       .select(CUSTOM_ENTITY_SELECT)
       .eq("entity_id", entityId)
       .single();
-    firstErr(error);
-    return toCustomEntity(data as Row);
+    firstErr(loadError);
+    return toCustomEntity(row as Row);
   }
   async removeEntity(entityId: string): Promise<void> {
     const { error } = await this.supabase

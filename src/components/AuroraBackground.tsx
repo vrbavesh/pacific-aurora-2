@@ -90,17 +90,15 @@ const fragmentShader = /* glsl */ `
 function CelestialParticles() {
   const pointsRef = useRef<THREE.Points>(null);
   
-  const [positions, opacities] = useMemo(() => {
+  const positions = useMemo(() => {
     const count = 90;
     const pos = new Float32Array(count * 3);
-    const op = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 18;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 14;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 8 - 1;
-      op[i] = 0.2 + Math.random() * 0.6;
     }
-    return [pos, op];
+    return pos;
   }, []);
 
   useFrame((state) => {
@@ -181,7 +179,7 @@ function SceneController({ pathname }: { pathname: string }) {
     return () => window.removeEventListener("mousemove", onMouseMove);
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     // Smooth lerp mouse coordinates
     mousePos.current.x = THREE.MathUtils.lerp(
       mousePos.current.x,

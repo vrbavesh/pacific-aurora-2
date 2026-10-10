@@ -16,7 +16,6 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -192,8 +191,6 @@ export default function ForgotPasswordPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
                   required
                   disabled={loading}
                   placeholder="author@pacificaurora.dev"
@@ -235,8 +232,6 @@ export default function ForgotPasswordPage() {
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  onFocus={() => setFocusedField("otp")}
-                  onBlur={() => setFocusedField(null)}
                   maxLength={6}
                   required
                   autoFocus
@@ -261,8 +256,6 @@ export default function ForgotPasswordPage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  onFocus={() => setFocusedField("newPassword")}
-                  onBlur={() => setFocusedField(null)}
                   required
                   minLength={8}
                   disabled={loading}

@@ -105,6 +105,7 @@ export interface Character {
   status?: CharacterStatus;
   /** @nullable */
   notes?: string | null;
+  updatedAt?: string;
 }
 
 export interface CharacterInput {
@@ -135,6 +136,7 @@ export interface Place {
   status?: string | null;
   /** @nullable */
   lastChapterId?: string | null;
+  updatedAt?: string;
 }
 
 export interface PlaceInput {
@@ -157,6 +159,7 @@ export interface Item {
   wielderEntityId?: string | null;
   /** @nullable */
   manualWielderName?: string | null;
+  updatedAt?: string;
 }
 
 export interface ItemInput {
@@ -177,6 +180,7 @@ export interface CustomEntityType {
   worldId?: string;
   name?: string;
   position?: number;
+  updatedAt?: string;
 }
 
 export interface CustomEntityAttribute {
@@ -197,6 +201,7 @@ export interface CustomEntity {
   name?: string;
   entityTypeId?: string;
   attributes?: CustomEntityAttributes;
+  updatedAt?: string;
 }
 
 export interface Relationship {

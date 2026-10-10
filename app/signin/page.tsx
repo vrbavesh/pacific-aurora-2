@@ -13,7 +13,6 @@ export default function SigninPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,8 +111,6 @@ export default function SigninPage() {
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              onFocus={() => setFocusedField("identifier")}
-              onBlur={() => setFocusedField(null)}
               required
               disabled={loading}
               placeholder="you@example.com or @username"
@@ -143,8 +140,6 @@ export default function SigninPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedField("password")}
-              onBlur={() => setFocusedField(null)}
               required
               disabled={loading}
               placeholder="••••••••••••"

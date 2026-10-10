@@ -227,32 +227,14 @@ export class ChapterRepositoryImpl implements ChapterRepository {
     if (error) throw new Error(error.message);
   }
   async move(id: string, direction: "up" | "down"): Promise<Chapter[]> {
-    const current = await this.get(id);
-    if (!current || !current.bookId) throw new NotFoundError();
-    const chapters = await this.list(current.bookId);
-    const idx = chapters.findIndex((c) => c.id === id);
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (idx < 0 || swapIdx < 0 || swapIdx >= chapters.length) {
-      return chapters;
-    }
-    const next = [...chapters];
-    const [moved] = next.splice(idx, 1);
-    next.splice(swapIdx, 0, moved);
-    for (const [i, c] of next.entries()) {
-      const { error } = await this.supabase
-        .from("chapters")
-        .update({ position: i + 1000000 })
-        .eq("id", c.id!);
-      if (error) throw new Error(error.message);
-    }
-    for (const [i, c] of next.entries()) {
-      const { error } = await this.supabase
-        .from("chapters")
-        .update({ position: i })
-        .eq("id", c.id!);
-      if (error) throw new Error(error.message);
-    }
-    return this.list(current.bookId);
+    const { data, error } = await this.supabase.rpc("move_chapter_atomic", {
+      target_chapter_id: id,
+      move_direction: direction,
+    });
+    if (error) throw new Error(error.message);
+    const chapters = ((data ?? []) as Row[]).map(toChapter);
+    if (chapters.length === 0) throw new NotFoundError();
+    return chapters;
   }
   async listPoints(chapterId: string): Promise<ChapterImportantPoint[]> {
     const { data, error } = await this.supabase
