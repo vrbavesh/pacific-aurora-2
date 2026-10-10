@@ -18,6 +18,7 @@ const routeNames: Array<[RegExp, string]> = [
   [/^\/api\/auth\/forgot-password$/, "AuthForgotPassword"],
   [/^\/api\/auth\/password\/reset$/, "AuthPasswordReset"],
   [/^\/api\/auth\/logout$/, "AuthLogout"],
+  [/^\/api\/auth\/account$/, "AuthAccount"],
   [/^\/api\/auth\/session$/, "AuthSession"],
   [/^\/api\/profiles\/me$/, "ProfilesMe"],
   [

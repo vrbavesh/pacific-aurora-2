@@ -117,6 +117,35 @@ test("writer saves text and preserves unsaved work between chapter tabs", async 
   ).toBe(true);
 });
 
+test("account deletion requires an explicit confirmation before clearing the session", async ({
+  page,
+}) => {
+  const requests = await fixture(page);
+  await page.goto("/books/book-1");
+
+  await page.getByRole("button", { name: "Open account menu" }).click();
+  await page.getByRole("button", { name: "Delete account", exact: true }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Delete account permanently?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Delete account", exact: true })).toBeDisabled();
+
+  await dialog.getByRole("textbox").fill("DELETE");
+  await Promise.all([
+    page.waitForURL("**/"),
+    dialog.getByRole("button", { name: "Delete account", exact: true }).click(),
+  ]);
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "DELETE" &&
+        request.path === "/api/auth/account" &&
+        request.body.confirmation === "DELETE",
+    ),
+  ).toBe(true);
+});
+
 test("world editing sends explicit null when removing a wielder", async ({
   page,
 }) => {

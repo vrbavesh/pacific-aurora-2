@@ -178,6 +178,35 @@ paths:
       summary: End the session
       responses:
         '204': { description: Signed out }
+  /auth/account:
+    delete:
+      summary: Permanently delete the authenticated account and all associated data
+      description: >
+        The server verifies the current bearer token, deletes that exact Supabase
+        Auth user with server-only credentials, and database foreign-key cascades
+        permanently remove the profile, worlds, books, chapters, entities,
+        timelines, relationships, and custom data. This action cannot be undone.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [confirmation]
+              properties:
+                confirmation:
+                  type: string
+                  enum: [DELETE]
+                  description: Exact confirmation phrase required for permanent deletion
+      responses:
+        '204': { description: Account and associated data permanently deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '503':
+          description: Account deletion is temporarily unavailable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
   /auth/session:
     get:
       summary: The current session's user and profile, used to decide routing

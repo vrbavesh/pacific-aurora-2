@@ -126,6 +126,17 @@ export const PostAuthLogoutResponse = zod.void()
 
 
 /**
+ * The server verifies the current bearer token, deletes that exact Supabase Auth user with server-only credentials, and database foreign-key cascades permanently remove the profile, worlds, books, chapters, entities, timelines, relationships, and custom data. This action cannot be undone.
+ * @summary Permanently delete the authenticated account and all associated data
+ */
+export const DeleteAuthAccountBody = zod.object({
+  "confirmation": zod.enum(['DELETE']).describe('Exact confirmation phrase required for permanent deletion')
+})
+
+export const DeleteAuthAccountResponse = zod.void()
+
+
+/**
  * @summary The current session's user and profile, used to decide routing
  */
 export const GetAuthSessionResponse = zod.object({

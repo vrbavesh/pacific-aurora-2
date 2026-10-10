@@ -11,6 +11,7 @@ test("contract artifact exists and declares OpenAPI", () => {
   const text = readFileSync(path, "utf8");
   expect(text).toContain("openapi: 3.1.0");
   expect(text).toContain("/auth/signup");
+  expect(text).toContain("/auth/account");
   expect(text).toContain("/worlds/{worldId}/relationships");
 });
 
@@ -43,6 +44,9 @@ test("runtime validation covers dynamic routes and empty 204 responses", () => {
     ),
   ).toEqual({ data: [] });
   expect(validateSuccessResponse("/api/books/book", "DELETE", undefined)).toBe(
+    undefined,
+  );
+  expect(validateSuccessResponse("/api/auth/account", "DELETE", undefined)).toBe(
     undefined,
   );
 });

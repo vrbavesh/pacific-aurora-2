@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { CaretDown, PencilSimple, SignOut, User } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  PencilSimple,
+  SignOut,
+  Trash,
+  User,
+  Warning,
+} from "@phosphor-icons/react";
 import { apiFetch, clearToken } from "@/src/lib/api/client";
 
 interface UserProfile {
@@ -15,6 +22,11 @@ export default function AccountMenu() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const confirmationInput = useRef<HTMLInputElement>(null);
   const reduce = useReducedMotion();
 
   useEffect(() => {
@@ -29,6 +41,10 @@ export default function AccountMenu() {
       });
   }, []);
 
+  useEffect(() => {
+    if (deleteOpen) confirmationInput.current?.focus();
+  }, [deleteOpen]);
+
   const handleLogout = async () => {
     try {
       await apiFetch("/api/auth/logout", { method: "POST" });
@@ -37,6 +53,34 @@ export default function AccountMenu() {
     }
     clearToken();
     window.location.href = "/";
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleting) return;
+    setDeleteOpen(false);
+    setConfirmation("");
+    setDeleteError(null);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmation !== "DELETE" || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await apiFetch("/api/auth/account", {
+        method: "DELETE",
+        body: JSON.stringify({ confirmation }),
+      });
+      clearToken();
+      window.location.assign("/");
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : "Unable to delete your account. Please try again.",
+      );
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -128,9 +172,103 @@ export default function AccountMenu() {
                   <SignOut size={16} weight="regular" aria-hidden="true" />
                   Log out
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setDeleteOpen(true);
+                  }}
+                  className="mt-1 flex w-full items-center gap-3 px-3 py-2 text-sm text-rose-200 transition-colors hover:bg-rose-400/10 hover:text-rose-100"
+                >
+                  <Trash size={16} weight="regular" aria-hidden="true" />
+                  Delete account
+                </button>
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteOpen && (
+          <motion.div
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-[#02070c]/80 p-4"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={reduce ? undefined : { opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.2 }}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-account-title"
+              aria-describedby="delete-account-description"
+              initial={reduce ? false : { opacity: 0, y: 12, scale: 0.98 }}
+              animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
+              exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: reduce ? 0 : 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md border border-rose-300/25 bg-[#0a1826] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-rose-300/30 bg-rose-400/10 text-rose-100">
+                  <Warning size={20} weight="fill" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 id="delete-account-title" className="text-lg font-medium text-white">
+                    Delete account permanently?
+                  </h2>
+                  <p
+                    id="delete-account-description"
+                    className="mt-2 text-sm leading-6 text-foreground-muted"
+                  >
+                    This permanently removes your profile and all worlds, books,
+                    chapters, entities, timelines, and relationships. It cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <label htmlFor="delete-account-confirmation" className="mt-6 block text-sm text-white">
+                Type <span className="font-medium">DELETE</span> to confirm
+              </label>
+              <input
+                ref={confirmationInput}
+                id="delete-account-confirmation"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                disabled={deleting}
+                autoComplete="off"
+                spellCheck={false}
+                className="mt-2 w-full border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none transition-colors placeholder:text-foreground-muted focus:border-rose-200 focus:ring-2 focus:ring-rose-200/25 disabled:cursor-not-allowed disabled:opacity-60"
+                placeholder="DELETE"
+                aria-describedby={deleteError ? "delete-account-error" : undefined}
+              />
+              {deleteError && (
+                <p id="delete-account-error" className="mt-3 text-sm text-rose-200" role="alert">
+                  {deleteError}
+                </p>
+              )}
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={closeDeleteDialog}
+                  disabled={deleting}
+                  className="border border-white/15 px-4 py-2 text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  disabled={confirmation !== "DELETE" || deleting}
+                  aria-busy={deleting}
+                  className="bg-rose-300 px-4 py-2 text-sm font-medium text-[#1a080c] transition-colors hover:bg-rose-200 disabled:cursor-not-allowed disabled:bg-rose-300/40 disabled:text-[#1a080c]/60"
+                >
+                  {deleting ? "Deleting account..." : "Delete account"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

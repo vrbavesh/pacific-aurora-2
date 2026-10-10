@@ -378,6 +378,32 @@ npm run build
 Exit criteria: both sides pass against the one artifact, the 404 suite is green,
 and the build succeeds.
 
+### Step 13 — Account deletion
+
+**Document section:** Account Menu, Authorization, Proposed DB Schema.
+
+Add `DELETE /api/auth/account` to the canonical OpenAPI contract. The request
+requires the exact confirmation phrase `DELETE`; the server derives the target
+solely from the validated bearer token and uses server-only Supabase admin
+credentials to delete that Auth user. It never accepts an account id from the
+client. Deleting `auth.users` relies on the existing database foreign-key cascade
+from `profiles` to permanently remove all user-owned worlds, books, chapters,
+entities, timelines, relationships, and custom data.
+
+The account menu adds a clearly destructive Delete account action. Its accessible
+confirmation dialog explains the full deletion scope, requires the exact phrase,
+keeps Cancel available, shows in-progress and error states, clears the local token
+after success, and returns to the landing page. The action is irreversible.
+
+Verification: generate API types, validate the 204 contract response, cover the
+confirmation UI in Playwright, and run a live temporary-account test proving the
+server route deletes only its authenticated caller and the database cascade removes
+the caller's data.
+
+Exit criteria: the confirmation cannot submit without `DELETE`; an authenticated
+caller can delete only itself; all associated test data is absent after deletion;
+and no local session remains.
+
 ## 7. Fixed readings of the document
 
 These resolve places where the document's prose and schema are left implicit. They

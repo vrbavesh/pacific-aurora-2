@@ -458,6 +458,21 @@ export type PostAuthPasswordResetBody = {
   newPassword: string;
 };
 
+/**
+ * Exact confirmation phrase required for permanent deletion
+ */
+export type DeleteAuthAccountBodyConfirmation = typeof DeleteAuthAccountBodyConfirmation[keyof typeof DeleteAuthAccountBodyConfirmation];
+
+
+export const DeleteAuthAccountBodyConfirmation = {
+  DELETE: 'DELETE',
+} as const;
+
+export type DeleteAuthAccountBody = {
+  /** Exact confirmation phrase required for permanent deletion */
+  confirmation: DeleteAuthAccountBodyConfirmation;
+};
+
 export type PatchProfilesMeBody = {
   username?: string;
   userId?: string;
@@ -1146,6 +1161,81 @@ export const postAuthLogout = async ( options?: RequestInit): Promise<postAuthLo
 
   const data: postAuthLogoutResponse['data'] = body ? JSON.parse(body) : undefined
   return { data, status: res.status, headers: res.headers } as postAuthLogoutResponse
+}
+
+
+
+export type deleteAuthAccountResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteAuthAccountResponse401 = {
+  data: UnauthorizedResponse
+  status: 401
+}
+
+export type deleteAuthAccountResponse422 = {
+  data: ValidationResponse
+  status: 422
+}
+
+export type deleteAuthAccountResponse503 = {
+  data: ErrorEnvelope
+  status: 503
+}
+
+export type deleteAuthAccountResponseSuccess = (deleteAuthAccountResponse204) & {
+  headers: Headers;
+};
+export type deleteAuthAccountResponseError = (deleteAuthAccountResponse401 | deleteAuthAccountResponse422 | deleteAuthAccountResponse503) & {
+  headers: Headers;
+};
+
+export type deleteAuthAccountResponse = (deleteAuthAccountResponseSuccess | deleteAuthAccountResponseError)
+
+export const getDeleteAuthAccountUrl = () => {
+
+
+
+
+  return `/auth/account`
+}
+
+/**
+ * The server verifies the current bearer token, deletes that exact Supabase Auth user with server-only credentials, and database foreign-key cascades permanently remove the profile, worlds, books, chapters, entities, timelines, relationships, and custom data. This action cannot be undone.
+ * @summary Permanently delete the authenticated account and all associated data
+ */
+export const deleteAuthAccount = async (deleteAuthAccountBody: DeleteAuthAccountBody, options?: RequestInit): Promise<deleteAuthAccountResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+const res = await fetch(getDeleteAuthAccountUrl(),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(deleteAuthAccountBody)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: deleteAuthAccountResponse['data'] = body ? JSON.parse(body) : undefined
+  return { data, status: res.status, headers: res.headers } as deleteAuthAccountResponse
 }
 
 
