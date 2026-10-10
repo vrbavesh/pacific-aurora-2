@@ -442,6 +442,10 @@ are the narrowest reading that stays inside the supplied schema.
 
 ## 9. Mutation log
 
+- Legal pages and consent gate - Google OAuth publishing requires a public privacy
+  policy URL on the app's domain, and the owner asked for a consent checkbox on
+  `/signup` and `/signin`. Static pages and a client-side gate only; no schema,
+  contract, or API change.
 - Step 2 — the live `supabase db reset` / `supabase db lint` / per-table policy
   smoke tests could not be executed because this host has no Docker, no local
   Postgres, and no `supabase` CLI. The schema was instead applied verbatim from

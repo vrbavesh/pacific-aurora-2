@@ -1090,6 +1090,12 @@ export default function LandingPage() {
           <Link href="/signup" className="transition hover:text-white/70">
             Start writing
           </Link>
+          <Link href="/privacy" className="transition hover:text-white/70">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="transition hover:text-white/70">
+            Terms and Conditions
+          </Link>
         </div>
 
         <p className="text-[10px] text-white/65">

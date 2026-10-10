@@ -117,6 +117,31 @@ test("writer saves text and preserves unsaved work between chapter tabs", async 
   ).toBe(true);
 });
 
+test("legal pages are public and consent gates email authentication", async ({
+  page,
+}) => {
+  await page.goto("/privacy");
+  await expect(page).toHaveTitle("Privacy Policy | Pacific Aurora");
+  await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
+  await expect(page.getByText("pacificaurora2.0@gmail.com").first()).toBeVisible();
+
+  await page.goto("/terms");
+  await expect(page).toHaveTitle("Terms and Conditions | Pacific Aurora");
+  await expect(page.getByRole("heading", { name: "Terms and Conditions" })).toBeVisible();
+
+  await page.goto("/signup");
+  const signupButton = page.getByRole("button", { name: "Continue with Email" });
+  await expect(signupButton).toBeDisabled();
+  await page.getByLabel(/I agree to the Terms and Conditions and the Privacy Policy/).check();
+  await expect(signupButton).toBeEnabled();
+
+  await page.goto("/signin");
+  const signinButton = page.getByRole("button", { name: "Sign In" });
+  await expect(signinButton).toBeDisabled();
+  await page.getByLabel(/I agree to the Terms and Conditions and the Privacy Policy/).check();
+  await expect(signinButton).toBeEnabled();
+});
+
 test("account deletion requires an explicit confirmation before clearing the session", async ({
   page,
 }) => {

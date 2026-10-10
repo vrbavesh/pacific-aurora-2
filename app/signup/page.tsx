@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -28,6 +29,10 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (step === "form" && !agreed) {
+      setError("Please agree to the terms to continue");
+      return;
+    }
     setLoading(true);
     try {
       if (step === "form") {
@@ -198,9 +203,40 @@ export default function SignupPage() {
                   />
                 </motion.div>
 
+                <div className="flex items-start gap-3 pt-1">
+                  <input
+                    id="signup-consent"
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(event) => setAgreed(event.target.checked)}
+                    disabled={loading}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#2dd4bf] disabled:opacity-50"
+                  />
+                  <label htmlFor="signup-consent" className="text-xs leading-5 text-foreground-muted">
+                    I agree to the{" "}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      Terms and Conditions
+                    </Link>{" "}
+                    and the{" "}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+
                 <motion.button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !agreed}
                   whileHover={{ y: -1, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
@@ -304,7 +340,17 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <GoogleAuthButton onError={setError} />
+            {agreed ? (
+              <GoogleAuthButton onError={setError} />
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="flex min-h-[44px] w-full cursor-not-allowed items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium text-foreground-muted/60 opacity-60"
+              >
+                Continue with Google
+              </button>
+            )}
           </motion.div>
         )}
 
