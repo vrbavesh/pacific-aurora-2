@@ -42,3 +42,5 @@ next-env.d.ts
 # Browser test artifacts
 /test-results/
 /playwright-report/
+#.md file plans
+/plans

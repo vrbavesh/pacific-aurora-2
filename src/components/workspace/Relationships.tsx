@@ -48,8 +48,13 @@ export default function Relationships({ worldId }: { worldId: string }) {
     if (!query.data) return;
     const { characters, relationships } = query.data;
     setNodes((previous) => {
+      // A character deleted in the World section takes their nodes with them.
+      const alive = new Set(
+        characters.map((character) => character.entityId).filter(Boolean),
+      );
+      const kept = previous.filter((node) => alive.has(node.id));
       const wanted = new Set([
-        ...previous.map((node) => node.id),
+        ...kept.map((node) => node.id),
         ...relationships.flatMap((edge) => [edge.entityAId!, edge.entityBId!]),
       ]);
       return characters

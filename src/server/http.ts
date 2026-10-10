@@ -58,5 +58,5 @@ export function optionalInt(
   }
   if (min !== undefined && v < min) throw new ValidationError(`${field} must be >= ${min}`);
   if (max !== undefined && v > max) throw new ValidationError(`${field} must be <= ${max}`);
-  return Math.trunc(v);
+  return v;
 }

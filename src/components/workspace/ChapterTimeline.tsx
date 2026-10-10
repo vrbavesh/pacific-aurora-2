@@ -79,19 +79,30 @@ function ImportantPoints({
         className="space-y-3"
         onSubmit={async (e) => {
           e.preventDefault();
+          if (busy) return;
+          const lines = text
+            .split(/\n+/)
+            .map((line) => line.trim())
+            .filter(Boolean);
+          if (lines.length === 0) return;
           setBusy(true);
           setError("");
+          let saved = 0;
           try {
-            for (const line of text
-              .split(/\n+/)
-              .map((line) => line.trim())
-              .filter(Boolean)) {
+            for (const line of lines) {
               await write(path, "POST", { content: line });
-              setText((current) => current.replace(line, "").trim());
+              saved += 1;
             }
+            setText("");
             await refresh();
           } catch (err) {
-            setError(message(err));
+            // Keep only the lines that never saved so a retry cannot duplicate them.
+            setText(lines.slice(saved).join("\n"));
+            setError(
+              saved > 0
+                ? `${saved} of ${lines.length} saved. ${message(err)} The rest is still here.`
+                : message(err),
+            );
             await refresh();
           } finally {
             setBusy(false);
@@ -104,11 +115,12 @@ function ImportantPoints({
             required
             rows={3}
             value={text}
+            disabled={busy}
             onChange={(e) => setText(e.target.value)}
           />
         </Field>
         <button className={button} disabled={busy || !text.trim()}>
-          Add important points
+          {busy ? "Adding..." : "Add important points"}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
