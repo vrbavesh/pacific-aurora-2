@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AccountMenu from "@/src/components/AccountMenu";
-import AuroraBackground from "@/src/components/AuroraBackground";
 import { PageTransition } from "@/src/components/PageTransition";
 import ConfirmDialog from "@/src/components/home/ConfirmDialog";
 import CreateBookDialog, { type CreateBookChoice } from "@/src/components/home/CreateBookDialog";
@@ -259,7 +258,6 @@ export default function Home() {
 
   return (
     <main className="relative h-[100dvh] overflow-hidden text-white">
-      <AuroraBackground />
 
       <PageTransition>
         <div className="flex h-[100dvh] w-full">

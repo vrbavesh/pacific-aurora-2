@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
-import AuroraBackground from "@/src/components/AuroraBackground";
 
 const entityCards = [
   {
@@ -421,8 +420,7 @@ export default function LandingPage() {
   const heroScale = useTransform(scrollY, [0, 700], [1, 0.96]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#020a10] px-5 py-5 text-white sm:px-10 sm:py-8">
-      <AuroraBackground />
+    <main className="relative min-h-screen overflow-hidden px-5 py-5 text-white sm:px-10 sm:py-8">
 
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between">
         <Link
