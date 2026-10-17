@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 
 const entityCards = [
@@ -425,10 +426,16 @@ export default function LandingPage() {
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-3 text-sm font-medium uppercase tracking-[0.22em] text-[#b7ddd6]"
+          aria-label="Pacific Aurora home"
+          className="block shrink-0"
         >
-          <span className="h-2 w-2 rounded-full bg-[#2dd4bf] shadow-[0_0_14px_rgba(45,212,191,.5)]" />
-          Pacific Aurora
+          <Image
+            src="/pacific-aurora-logo.svg"
+            alt="Pacific Aurora"
+            width="175"
+            height="60"
+            className="h-auto w-32 sm:w-44"
+          />
         </Link>
 
         <nav className="flex items-center gap-3 sm:gap-7">

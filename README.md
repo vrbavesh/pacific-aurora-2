@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 1.3**
+**Version 1.3.1**
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
 persistent world behind it: characters, places, items, relationships, and your own custom
