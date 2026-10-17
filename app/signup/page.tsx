@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { Eye, EyeSlash } from "@phosphor-icons/react";
 import GoogleAuthButton from "@/src/components/GoogleAuthButton";
 import { setSession } from "@/src/lib/api/client";
 
@@ -12,6 +13,7 @@ export default function SignupPage() {
   const [step, setStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -186,20 +188,33 @@ export default function SignupPage() {
                   transition={{ duration: 0.4, delay: 0.15 }}
                   className="space-y-1.5"
                 >
-                  <label className="block text-xs font-mono tracking-wider uppercase text-foreground-subtle">
+                  <label htmlFor="signup-password" className="block text-xs font-mono tracking-wider uppercase text-foreground-subtle">
                     Password
                   </label>
-                  <motion.input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    disabled={loading}
-                    placeholder="Minimum 8 characters"
-                    className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
-                    whileFocus={{ scale: 1.005 }}
-                  />
+                  <div className="relative">
+                    <motion.input
+                      id="signup-password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      disabled={loading}
+                      placeholder="Minimum 8 characters"
+                      className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 pr-12 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                      whileFocus={{ scale: 1.005 }}
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      onClick={() => setShowPassword((shown) => !shown)}
+                      disabled={loading}
+                      className="absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+                    >
+                      {showPassword ? <EyeSlash aria-hidden="true" size={20} /> : <Eye aria-hidden="true" size={20} />}
+                    </button>
+                  </div>
                 </motion.div>
 
                 <div className="flex items-start gap-3 pt-1">

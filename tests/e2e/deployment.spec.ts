@@ -87,6 +87,24 @@ test("landing typography defaults to Times New Roman", async ({ page }) => {
   expect(fonts.heading).toContain("Times New Roman");
 });
 
+for (const route of ["/signin", "/signup"]) {
+  test(`${route} password visibility toggles without clearing the field`, async ({ page }) => {
+    await page.goto(route);
+    const password = page.getByLabel("Password", { exact: true });
+    await password.fill("sample-secret-123");
+    await expect(password).toHaveAttribute("type", "password");
+
+    await page.getByRole("button", { name: "Show password" }).click();
+    await expect(password).toHaveAttribute("type", "text");
+    await expect(password).toHaveValue("sample-secret-123");
+
+    await page.getByRole("button", { name: "Hide password" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(password).toHaveAttribute("type", "password");
+    await expect(password).toHaveValue("sample-secret-123");
+  });
+}
+
 for (const route of ["/", "/books/book-1", "/worlds/world-1"]) {
   test(`${route} has no serious accessibility violations`, async ({ page }) => {
     if (route !== "/") await authenticatedFixture(page);

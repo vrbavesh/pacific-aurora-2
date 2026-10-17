@@ -6,7 +6,7 @@ Pacific Aurora is a full-stack authoring and worldbuilding workspace. Fiction ge
 persistent world behind it: characters, places, items, relationships, and user-defined
 custom entity types stay connected to the books written inside them.
 
-**V2 branch version: 2.1.1.** Recorded in `README.md` and `package.json`.
+**V2 branch version: 2.1.2.** Recorded in `README.md` and `package.json`.
 V1.3 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning

@@ -17,7 +17,7 @@ without a full codebase onboarding. It has three parts:
 `codex/pacific-aurora-v2`; it has not been merged or deployed. The V2 PDF in `plans/` is the
 authority for V2 scope, and `plans/pacific-aurora-v2-blueprint.md` sets its eight-step order.
 Steps 1-8 are implemented on the V2 branch. Patch work has advanced the branch files to
-version 2.1.1. Patch 2.0.3 explicitly defaults the landing page to Times New Roman.
+version 2.1.2. Patch 2.0.3 explicitly defaults the landing page to Times New Roman.
 Writer and AI regressions pass, along with lint,
 typecheck, 83 default tests, and the production build. The 27-case browser run
 passed 26; an unrelated sign-in consent case passed on isolated rerun.
@@ -40,6 +40,10 @@ production rollout, apply the V2 migration to the deployed project in order.
 
 ### V2 branch progress (local and isolated preview only)
 
+- Patch 2.1.2 adds a keyboard-accessible show/hide password button to both
+  `/signin` and `/signup`. The button preserves the entered value and never
+  submits the form. Lint, typecheck, 83 default tests, focused Chromium 2/2,
+  and isolated build pass; V1 deployment and Supabase are unchanged.
 - Patch 2.1.1 points local `.env.local` at Groq's chat-completions endpoint
   with `openai/gpt-oss-120b`, using the existing server-only `AI_API_KEY`.
   A local live API request returned JSON successfully. Create/update cards
@@ -209,7 +213,7 @@ Pacific Aurora is a full-stack authoring and worldbuilding workspace. Fiction ge
 persistent world behind it: characters, places, items, relationships, and user-defined
 custom entity types stay connected to the books written inside them.
 
-**V2 branch version: 2.1.1.** Recorded in `README.md` and `package.json`.
+**V2 branch version: 2.1.2.** Recorded in `README.md` and `package.json`.
 V1.3 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
@@ -437,6 +441,11 @@ Short, descriptive, implementation-oriented commit subjects. Keep secrets out of
 
 Most recent first. Use this to tell deliberate state from unfinished work.
 
+- **Auth password visibility (2026-10-17, branch only).** Patch 2.1.2 adds
+  labeled eye buttons to `/signin` and `/signup`, with a visible keyboard focus
+  state and unchanged password value when toggled. Lint, typecheck, 83 default
+  tests, focused Chromium 2/2, and isolated build pass. No auth API or deployed
+  V1 change.
 - **Groq local configuration (2026-10-17, branch/local only).** Patch 2.1.1
   switches the local provider from Ollama to Groq GPT-OSS 120B and rejects
   unsupported create/update excerpts. The key remains only in `.env.local`;

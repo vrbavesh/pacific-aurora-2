@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 2.1.1 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
+**Version 2.1.2 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
 V2 migration and release are explicitly approved.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a

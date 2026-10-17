@@ -8,6 +8,9 @@ V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 
 ## Current V2 branch status
 
+- Patch 2.1.2 adds password visibility controls to sign-in and sign-up only.
+  Lint, typecheck, 83 default tests, focused Chromium 2/2, and isolated build
+  pass. No auth API, preview database, or deployed V1 change.
 - Patch 2.1.1 configures local Groq (`openai/gpt-oss-120b`) through the
   existing server-only adapter/key. A live JSON-mode request succeeded.
   Invalid create/update excerpts are filtered; Groq output quality remains
