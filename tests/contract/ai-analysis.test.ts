@@ -71,6 +71,15 @@ test("model cannot propose creating an existing character again", () => {
   expect(safeSuggestions({ suggestions: [duplicate] }, context, "chapter-1", "Mara returned.")).toHaveLength(0);
 });
 
+test("a create card without an exact passage excerpt is not shown", () => {
+  const unsupported = {
+    kind: "item", action: "create", targetEntityId: null, expectedTargetUpdatedAt: null,
+    changes: { name: "Dawnbringer" }, summary: "Add the sword", sourceExcerpt: "a glowing blade",
+  };
+  expect(safeSuggestions({ suggestions: [unsupported] }, context, "chapter-1",
+    "Kael drew Dawnbringer from the stone.")).toEqual([]);
+});
+
 test("saved world facts are omitted, but a missing character remains actionable", () => {
   const kael = { kind: "character", action: "create", targetEntityId: null, expectedTargetUpdatedAt: null,
     changes: { name: "Kael" }, summary: "Add Kael", sourceExcerpt: "Kael" };

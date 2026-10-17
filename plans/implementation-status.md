@@ -8,6 +8,11 @@ V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 
 ## Current V2 branch status
 
+- Patch 2.1.1 configures local Groq (`openai/gpt-oss-120b`) through the
+  existing server-only adapter/key. A live JSON-mode request succeeded.
+  Invalid create/update excerpts are filtered; Groq output quality remains
+  stochastic. Lint, typecheck, 83 default tests, and isolated build pass.
+  No deployed V1 configuration or database was changed.
 - Version 2.1.0 changes AI review to the latest 500 words every five minutes
   while Writer remains open, with fresh World Management comparison and
   chapter-scoped declines persisted across sign-ins/devices. Migration 0007

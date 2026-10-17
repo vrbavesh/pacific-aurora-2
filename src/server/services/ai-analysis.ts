@@ -86,6 +86,7 @@ export function safeSuggestions(value: unknown, context: AiWorldContext, chapter
         Object.keys(raw).some((key) => !["kind", "action", "targetEntityId", "expectedTargetUpdatedAt", "entityTypeId", "chapterId", "characterEntityId", "changes", "summary", "sourceExcerpt"].includes(key)) ||
         (typeof raw.changes.name === "string" && raw.changes.name.length > 120)) continue;
     const sourceExcerpt = typeof raw.sourceExcerpt === "string" && text.includes(raw.sourceExcerpt) ? raw.sourceExcerpt : null;
+    if ((raw.action === "create" || raw.action === "update") && !sourceExcerpt) continue;
     const card = { ...raw, suggestionId: randomUUID(), sourceExcerpt };
     const parsed = PostBooksBookIdChaptersChapterIdAiSuggestionsResponse.safeParse({
       data: { suggestions: [card], completedMilestone: 0, nextEligibleAt: null, checkpointVersion: 0 },

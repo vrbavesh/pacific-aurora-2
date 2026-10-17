@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 2.1.0 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
+**Version 2.1.1 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
 V2 migration and release are explicitly approved.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
@@ -113,7 +113,7 @@ cp .env.example .env.local      # then fill in the values below
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | Userid sign-in lookup and account deletion. Never exposed to the browser |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | browser | Google Identity Services client ID |
 | `AI_BASE_URL` | server only | Loopback Ollama URL and port (for example `http://localhost:11434/v1`) or `https://api.groq.com/openai/v1` |
-| `AI_MODEL` | server only | Installed Ollama model or configured Groq model ID |
+| `AI_MODEL` | server only | Groq model ID (`openai/gpt-oss-120b` by default) or installed Ollama model |
 | `AI_API_KEY` | server only | Required for Groq, unused by local Ollama |
 
 ### Apply the database schema
