@@ -34,6 +34,14 @@ export default function Relationships({ worldId }: { worldId: string }) {
   }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [colorMode, setColorMode] = useState<"dark" | "light">("dark");
+  useEffect(() => {
+    const sync = () => setColorMode(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
   const query = useQuery({
     queryKey: ["relationships", worldId],
     queryFn: async () => {
@@ -81,9 +89,9 @@ export default function Relationships({ worldId }: { worldId: string }) {
     source: edge.entityAId!,
     target: edge.entityBId!,
     label: `${edge.relationshipType} (${edge.sentiment ?? 50})`,
-    style: { stroke: "#2dd4bf", strokeWidth: 2 },
-    labelStyle: { fill: "#e8f4f1" },
-    labelBgStyle: { fill: "#08141f" },
+    style: { stroke: "var(--accent)", strokeWidth: 2 },
+    labelStyle: { fill: "var(--foreground)" },
+    labelBgStyle: { fill: "var(--background-elevated)" },
   }));
   const refresh = () =>
     cache.invalidateQueries({ queryKey: ["relationships", worldId] });
@@ -94,7 +102,7 @@ export default function Relationships({ worldId }: { worldId: string }) {
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
-          colorMode="dark"
+          colorMode={colorMode}
           fitView
           style={{ background: "var(--background)" }}
           deleteKeyCode={null}
@@ -117,7 +125,7 @@ export default function Relationships({ worldId }: { worldId: string }) {
           }}
           onNodeClick={(_, node) => setRemoving({ nodeId: node.id })}
         >
-          <Background color="#243d46" gap={32} />
+          <Background color="var(--border-strong)" gap={32} />
           <Controls />
         </ReactFlow>
         {nodes.length === 0 && (

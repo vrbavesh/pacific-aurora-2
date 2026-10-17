@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { optionalInt, optionalString, readJson } from "@/src/server/http";
+import { optionalInt, optionalString, readJson, requireName } from "@/src/server/http";
 
 test("explicit null clears an optional field while omission leaves it unchanged", () => {
   expect(
@@ -21,3 +21,15 @@ test.each(["{", "[]", "null", '"text"'])(
     ).rejects.toMatchObject({ status: 400 });
   },
 );
+
+test("limits streamed JSON even without a trustworthy content-length", async () => {
+  const request = new Request("http://localhost", {
+    method: "POST",
+    body: JSON.stringify({ content: "x".repeat(2 * 1024 * 1024) }),
+  });
+  await expect(readJson(request)).rejects.toMatchObject({ status: 413 });
+});
+
+test("rejects names too long to store and render safely", () => {
+  expect(() => requireName({ name: "x".repeat(121) })).toThrow("1-120");
+});

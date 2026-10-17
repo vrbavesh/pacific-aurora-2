@@ -26,6 +26,22 @@ const routeNames: Array<[RegExp, string]> = [
     "BooksBookIdChaptersChapterIdImportantPointsPointId",
   ],
   [
+    /^\/api\/books\/[^/]+\/chapters\/[^/]+\/ai-suggestions\/eligibility$/,
+    "BooksBookIdChaptersChapterIdAiSuggestionsEligibility",
+  ],
+  [
+    /^\/api\/books\/[^/]+\/chapters\/[^/]+\/ai-suggestions\/apply$/,
+    "BooksBookIdChaptersChapterIdAiSuggestionsApply",
+  ],
+  [
+    /^\/api\/books\/[^/]+\/chapters\/[^/]+\/ai-suggestions\/decline$/,
+    "BooksBookIdChaptersChapterIdAiSuggestionsDecline",
+  ],
+  [
+    /^\/api\/books\/[^/]+\/chapters\/[^/]+\/ai-suggestions$/,
+    "BooksBookIdChaptersChapterIdAiSuggestions",
+  ],
+  [
     /^\/api\/books\/[^/]+\/chapters\/[^/]+\/important-points$/,
     "BooksBookIdChaptersChapterIdImportantPoints",
   ],

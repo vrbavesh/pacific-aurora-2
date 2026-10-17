@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/src/components/SmoothScrollProvider";
@@ -26,15 +27,19 @@ export const metadata: Metadata = {
     "A serene, private writing and worldbuilding sanctuary. Draft books, lay out worlds, and trace the people in them.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("pacific_aurora_theme");if(t==="light"){document.documentElement.dataset.theme="light";document.documentElement.classList.remove("dark");document.documentElement.style.colorScheme="light"}else{document.documentElement.style.colorScheme="dark"}}catch(e){document.documentElement.style.colorScheme="dark"}` }} />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased bg-[#040911] text-[#e8f4f1] selection:bg-accent selection:text-[#040911] overflow-x-hidden min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased bg-background text-foreground overflow-x-hidden min-h-screen`}
       >
         <SmoothScrollProvider />
         {/* Active Theory: Persistent 3D Aurora Canvas across the entire application */}

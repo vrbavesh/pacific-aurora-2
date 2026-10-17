@@ -1,18 +1,47 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
 const TOKEN_KEY = "pacific_aurora_token";
+const SESSION_KEY = "pacific_aurora_session";
+let browserClient: SupabaseClient | null = null;
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+function authClient(): SupabaseClient {
+  browserClient ??= createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+    { auth: { storageKey: SESSION_KEY, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } },
+  );
+  return browserClient;
 }
 
-export function setToken(token: string): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken(): void {
-  if (typeof window === "undefined") return;
+export async function setSession(session: { access_token?: string; refresh_token?: string } | null): Promise<void> {
+  if (!session?.access_token || !session.refresh_token) throw new Error("Sign-in returned an incomplete session");
+  const { error } = await authClient().auth.setSession({
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
+  if (error) throw error;
   window.localStorage.removeItem(TOKEN_KEY);
+}
+
+export async function clearSession(): Promise<void> {
+  try {
+    if (browserClient) await browserClient.auth.signOut({ scope: "local" });
+  } catch {
+    // The account may already be deleted; local credentials still must be removed.
+  } finally {
+    window.localStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
+async function getToken(): Promise<string | null> {
+  if (window.localStorage.getItem(SESSION_KEY)) {
+    const { data, error } = await authClient().auth.getSession();
+    if (error) throw error;
+    return data.session?.access_token ?? null;
+  }
+  // shortcut: access-only V1 sessions work until expiry; users then sign in once to upgrade.
+  return window.localStorage.getItem(TOKEN_KEY);
 }
 
 export class ApiRequestError extends Error {
@@ -30,7 +59,7 @@ export async function apiFetch<T = unknown>(
   path: string,
   init: RequestInit = {},
 ): Promise<{ data: T }> {
-  const token = getToken();
+  const token = await getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...((init.headers as Record<string, string>) ?? {}),

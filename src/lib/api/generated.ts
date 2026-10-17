@@ -18,7 +18,7 @@
  *   `character_status` is the only true enum.
  * - A world holds at most 10 custom entity types.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.0
  */
 export type CharacterStatus = typeof CharacterStatus[keyof typeof CharacterStatus];
 
@@ -232,6 +232,369 @@ export interface CharacterTimelinePoint {
   chapterId?: string | null;
 }
 
+export interface AiEligibility {
+  /**
+     * Last successfully analyzed 500-word total-count milestone for this chapter.
+     * @minimum 0
+     */
+  completedMilestone: number;
+  /**
+     * End of the per-user five-minute provider-dispatch cooldown.
+     * @nullable
+     */
+  nextEligibleAt: string | null;
+  /**
+     * Monotonic version used to detect stale chapter analysis requests.
+     * @minimum 0
+     */
+  checkpointVersion: number;
+}
+
+export interface AiNamedRelationship {
+  id: string;
+  entityAId: string;
+  entityAName: string;
+  entityBId: string;
+  entityBName: string;
+  relationshipType: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  sentiment: number;
+}
+
+export interface AiChapterPointContext {
+  chapterId: string;
+  chapterName: string;
+  point: ChapterImportantPoint;
+}
+
+export interface AiCharacterPointContext {
+  characterEntityId: string;
+  characterName: string;
+  point: CharacterTimelinePoint;
+}
+
+export interface CustomEntityTypeDetail {
+  id?: string;
+  worldId?: string;
+  name?: string;
+  position?: number;
+  attributes?: CustomEntityAttribute[];
+}
+
+/**
+ * Client-submitted context for the active book. The server rebuilds this
+ * entire snapshot under the caller's RLS identity before AI dispatch.
+ * Collections are complete, never silently truncated.
+ */
+export interface AiWorldContext {
+  world: World;
+  characters: Character[];
+  places: Place[];
+  items: Item[];
+  customEntityTypes: CustomEntityTypeDetail[];
+  customEntities: CustomEntity[];
+  relationships: AiNamedRelationship[];
+  chapterPoints: AiChapterPointContext[];
+  characterTimelinePoints: AiCharacterPointContext[];
+}
+
+export interface AiAnalysisRequest {
+  /**
+     * Latest 500-word plain-text window from the paused, possibly unsaved editor.
+     * @minLength 1
+     * @maxLength 30000
+     */
+  text: string;
+  /** @minimum 500 */
+  wordCount: number;
+  /** @minimum 1 */
+  milestone: number;
+  /** @minimum 0 */
+  checkpointVersion: number;
+}
+
+export type AiCharacterSuggestionKind = typeof AiCharacterSuggestionKind[keyof typeof AiCharacterSuggestionKind];
+
+
+export const AiCharacterSuggestionKind = {
+  character: 'character',
+} as const;
+
+export type AiCharacterSuggestionAction = typeof AiCharacterSuggestionAction[keyof typeof AiCharacterSuggestionAction];
+
+
+export const AiCharacterSuggestionAction = {
+  create: 'create',
+  update: 'update',
+} as const;
+
+export interface AiCharacterSuggestion {
+  suggestionId: string;
+  kind: AiCharacterSuggestionKind;
+  action: AiCharacterSuggestionAction;
+  /** @nullable */
+  targetEntityId: string | null;
+  /** @nullable */
+  expectedTargetUpdatedAt: string | null;
+  changes: CharacterInput;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiPlaceSuggestionKind = typeof AiPlaceSuggestionKind[keyof typeof AiPlaceSuggestionKind];
+
+
+export const AiPlaceSuggestionKind = {
+  place: 'place',
+} as const;
+
+export type AiPlaceSuggestionAction = typeof AiPlaceSuggestionAction[keyof typeof AiPlaceSuggestionAction];
+
+
+export const AiPlaceSuggestionAction = {
+  create: 'create',
+  update: 'update',
+} as const;
+
+export interface AiPlaceSuggestion {
+  suggestionId: string;
+  kind: AiPlaceSuggestionKind;
+  action: AiPlaceSuggestionAction;
+  /** @nullable */
+  targetEntityId: string | null;
+  /** @nullable */
+  expectedTargetUpdatedAt: string | null;
+  changes: PlaceInput;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiItemSuggestionKind = typeof AiItemSuggestionKind[keyof typeof AiItemSuggestionKind];
+
+
+export const AiItemSuggestionKind = {
+  item: 'item',
+} as const;
+
+export type AiItemSuggestionAction = typeof AiItemSuggestionAction[keyof typeof AiItemSuggestionAction];
+
+
+export const AiItemSuggestionAction = {
+  create: 'create',
+  update: 'update',
+} as const;
+
+export interface AiItemSuggestion {
+  suggestionId: string;
+  kind: AiItemSuggestionKind;
+  action: AiItemSuggestionAction;
+  /** @nullable */
+  targetEntityId: string | null;
+  /** @nullable */
+  expectedTargetUpdatedAt: string | null;
+  changes: ItemInput;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiCustomEntitySuggestionKind = typeof AiCustomEntitySuggestionKind[keyof typeof AiCustomEntitySuggestionKind];
+
+
+export const AiCustomEntitySuggestionKind = {
+  custom_entity: 'custom_entity',
+} as const;
+
+export type AiCustomEntitySuggestionAction = typeof AiCustomEntitySuggestionAction[keyof typeof AiCustomEntitySuggestionAction];
+
+
+export const AiCustomEntitySuggestionAction = {
+  create: 'create',
+  update: 'update',
+} as const;
+
+export type AiCustomEntitySuggestionChangesAttributes = { [key: string]: unknown };
+
+export type AiCustomEntitySuggestionChanges = {
+  /** @minLength 1 */
+  name?: string;
+  attributes?: AiCustomEntitySuggestionChangesAttributes;
+};
+
+export interface AiCustomEntitySuggestion {
+  suggestionId: string;
+  kind: AiCustomEntitySuggestionKind;
+  action: AiCustomEntitySuggestionAction;
+  entityTypeId: string;
+  /** @nullable */
+  targetEntityId: string | null;
+  /** @nullable */
+  expectedTargetUpdatedAt: string | null;
+  changes: AiCustomEntitySuggestionChanges;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiChapterPointSuggestionKind = typeof AiChapterPointSuggestionKind[keyof typeof AiChapterPointSuggestionKind];
+
+
+export const AiChapterPointSuggestionKind = {
+  chapter_point: 'chapter_point',
+} as const;
+
+export type AiChapterPointSuggestionAction = typeof AiChapterPointSuggestionAction[keyof typeof AiChapterPointSuggestionAction];
+
+
+export const AiChapterPointSuggestionAction = {
+  add_point: 'add_point',
+} as const;
+
+export type AiChapterPointSuggestionChanges = {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  content: string;
+};
+
+export interface AiChapterPointSuggestion {
+  suggestionId: string;
+  kind: AiChapterPointSuggestionKind;
+  action: AiChapterPointSuggestionAction;
+  chapterId: string;
+  changes: AiChapterPointSuggestionChanges;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiCharacterTimelinePointSuggestionKind = typeof AiCharacterTimelinePointSuggestionKind[keyof typeof AiCharacterTimelinePointSuggestionKind];
+
+
+export const AiCharacterTimelinePointSuggestionKind = {
+  character_timeline_point: 'character_timeline_point',
+} as const;
+
+export type AiCharacterTimelinePointSuggestionAction = typeof AiCharacterTimelinePointSuggestionAction[keyof typeof AiCharacterTimelinePointSuggestionAction];
+
+
+export const AiCharacterTimelinePointSuggestionAction = {
+  add_point: 'add_point',
+} as const;
+
+export type AiCharacterTimelinePointSuggestionChanges = {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  content: string;
+};
+
+export interface AiCharacterTimelinePointSuggestion {
+  suggestionId: string;
+  kind: AiCharacterTimelinePointSuggestionKind;
+  action: AiCharacterTimelinePointSuggestionAction;
+  characterEntityId: string;
+  /** @nullable */
+  chapterId: string | null;
+  changes: AiCharacterTimelinePointSuggestionChanges;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  summary: string;
+  /**
+     * @maxLength 320
+     * @nullable
+     */
+  sourceExcerpt: string | null;
+}
+
+export type AiSuggestion = AiCharacterSuggestion | AiPlaceSuggestion | AiItemSuggestion | AiCustomEntitySuggestion | AiChapterPointSuggestion | AiCharacterTimelinePointSuggestion;
+
+export interface AiAnalysisResult {
+  /** @maxItems 8 */
+  suggestions: AiSuggestion[];
+  /** @minimum 0 */
+  completedMilestone: number;
+  /** @nullable */
+  nextEligibleAt: string | null;
+  /** @minimum 0 */
+  checkpointVersion: number;
+}
+
+export interface AiApplyRequest {
+  suggestion: AiSuggestion;
+}
+
+export interface AiDeclineRequest {
+  suggestion: AiSuggestion;
+}
+
+export interface AiDeclineResult {
+  declined: true;
+}
+
+export type AiApplyResultKind = typeof AiApplyResultKind[keyof typeof AiApplyResultKind];
+
+
+export const AiApplyResultKind = {
+  character: 'character',
+  place: 'place',
+  item: 'item',
+  custom_entity: 'custom_entity',
+  chapter_point: 'chapter_point',
+  character_timeline_point: 'character_timeline_point',
+} as const;
+
+export interface AiApplyResult {
+  suggestionId: string;
+  kind: AiApplyResultKind;
+  /** Opaque ID of the created or updated owned resource. */
+  resourceId: string;
+}
+
 export type SessionUser = {
   id?: string;
   /** @nullable */
@@ -245,14 +608,6 @@ export interface Session {
 
 export interface DataSession {
   data?: Session;
-}
-
-export interface CustomEntityTypeDetail {
-  id?: string;
-  worldId?: string;
-  name?: string;
-  position?: number;
-  attributes?: CustomEntityAttribute[];
 }
 
 export interface DataCustomEntityTypeDetail {
@@ -386,6 +741,22 @@ export interface DataTimelinePoints {
   data?: CharacterTimelinePoint[];
 }
 
+export interface DataAiEligibility {
+  data: AiEligibility;
+}
+
+export interface DataAiAnalysis {
+  data: AiAnalysisResult;
+}
+
+export interface DataAiApply {
+  data: AiApplyResult;
+}
+
+export interface DataAiDecline {
+  data: AiDeclineResult;
+}
+
 /**
  * Not found, or the resource belongs to another user
  */
@@ -420,6 +791,16 @@ export type OtpSentResponse = DataEnvelope;
  * OTP resend is limited to once per 2 minutes
  */
 export type OtpRateLimitedResponse = ErrorEnvelope;
+
+/**
+ * One provider dispatch per user per five minutes
+ */
+export type AiRateLimitedResponse = ErrorEnvelope;
+
+/**
+ * The configured model did not return a usable response
+ */
+export type AiProviderUnavailableResponse = ErrorEnvelope;
 
 export type PostAuthSignupBody = {
   email: string;
@@ -935,19 +1316,12 @@ export type postAuthGoogleResponse201 = {
   status: 201
 }
 
-export type postAuthGoogleResponse409 = {
-  data: ErrorEnvelope
-  status: 409
-}
-
 export type postAuthGoogleResponseSuccess = (postAuthGoogleResponse200 | postAuthGoogleResponse201) & {
   headers: Headers;
 };
-export type postAuthGoogleResponseError = (postAuthGoogleResponse409) & {
-  headers: Headers;
-};
+;
 
-export type postAuthGoogleResponse = (postAuthGoogleResponseSuccess | postAuthGoogleResponseError)
+export type postAuthGoogleResponse = (postAuthGoogleResponseSuccess)
 
 export const getPostAuthGoogleUrl = () => {
 
@@ -958,7 +1332,7 @@ export const getPostAuthGoogleUrl = () => {
 }
 
 /**
- * @summary Sign in or sign up with Google
+ * @summary Sign in or sign up with Google; Supabase may link a verified matching email identity
  */
 export const postAuthGoogle = async (postAuthGoogleBody: PostAuthGoogleBody, options?: RequestInit): Promise<postAuthGoogleResponse> => {
 
@@ -2466,6 +2840,345 @@ export const deleteBooksBookIdChaptersChapterIdImportantPointsPointId = async (b
 
   const data: deleteBooksBookIdChaptersChapterIdImportantPointsPointIdResponse['data'] = body ? JSON.parse(body) : undefined
   return { data, status: res.status, headers: res.headers } as deleteBooksBookIdChaptersChapterIdImportantPointsPointIdResponse
+}
+
+
+
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse200 = {
+  data: DataAiEligibility
+  status: 200
+}
+
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse401 = {
+  data: UnauthorizedResponse
+  status: 401
+}
+
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse404 = {
+  data: NotFoundResponse
+  status: 404
+}
+
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseSuccess = (getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse200) & {
+  headers: Headers;
+};
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseError = (getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse401 | getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse404) & {
+  headers: Headers;
+};
+
+export type getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse = (getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseSuccess | getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseError)
+
+export const getGetBooksBookIdChaptersChapterIdAiSuggestionsEligibilityUrl = (bookId: string,
+    chapterId: string,) => {
+
+
+
+
+  return `/books/${bookId}/chapters/${chapterId}/ai-suggestions/eligibility`
+}
+
+/**
+ * Safe to call on open, reload, and after a stale request. If no checkpoint
+ * row exists, completedMilestone is derived from the saved chapter
+ * manuscript without writing state. The global per-user dispatch cooldown
+ * is returned separately. Cross-user and missing chapters are identical 404s.
+ * @summary Read the durable AI analysis checkpoint and cooldown
+ */
+export const getBooksBookIdChaptersChapterIdAiSuggestionsEligibility = async (bookId: string,
+    chapterId: string, options?: RequestInit): Promise<getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse> => {
+
+  const res = await fetch(getGetBooksBookIdChaptersChapterIdAiSuggestionsEligibilityUrl(bookId,chapterId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse
+}
+
+
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse200 = {
+  data: DataAiAnalysis
+  status: 200
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse400 = {
+  data: ValidationResponse
+  status: 400
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse401 = {
+  data: UnauthorizedResponse
+  status: 401
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse404 = {
+  data: NotFoundResponse
+  status: 404
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse422 = {
+  data: ValidationResponse
+  status: 422
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse429 = {
+  data: AiRateLimitedResponse
+  status: 429
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse502 = {
+  data: AiProviderUnavailableResponse
+  status: 502
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse503 = {
+  data: AiProviderUnavailableResponse
+  status: 503
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponseSuccess = (postBooksBookIdChaptersChapterIdAiSuggestionsResponse200) & {
+  headers: Headers;
+};
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponseError = (postBooksBookIdChaptersChapterIdAiSuggestionsResponse400 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse401 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse404 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse409 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse422 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse429 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse502 | postBooksBookIdChaptersChapterIdAiSuggestionsResponse503) & {
+  headers: Headers;
+};
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsResponse = (postBooksBookIdChaptersChapterIdAiSuggestionsResponseSuccess | postBooksBookIdChaptersChapterIdAiSuggestionsResponseError)
+
+export const getPostBooksBookIdChaptersChapterIdAiSuggestionsUrl = (bookId: string,
+    chapterId: string,) => {
+
+
+
+
+  return `/books/${bookId}/chapters/${chapterId}/ai-suggestions`
+}
+
+/**
+ * The browser sends the current unsaved text window. The server reads
+ * canonical world data with the caller's RLS client,
+ * validates ownership, and sends the full bounded snapshot to its
+ * configured model. One provider dispatch per user per five minutes,
+ * including failed dispatches. Only a valid response advances the
+ * completed milestone. No world data is written by this operation.
+ * @summary Analyze a paused 500-word manuscript window for suggestions
+ */
+export const postBooksBookIdChaptersChapterIdAiSuggestions = async (bookId: string,
+    chapterId: string,
+    aiAnalysisRequest: AiAnalysisRequest, options?: RequestInit): Promise<postBooksBookIdChaptersChapterIdAiSuggestionsResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+const res = await fetch(getPostBooksBookIdChaptersChapterIdAiSuggestionsUrl(bookId,chapterId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(aiAnalysisRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postBooksBookIdChaptersChapterIdAiSuggestionsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as postBooksBookIdChaptersChapterIdAiSuggestionsResponse
+}
+
+
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse200 = {
+  data: DataAiApply
+  status: 200
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse400 = {
+  data: ValidationResponse
+  status: 400
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse401 = {
+  data: UnauthorizedResponse
+  status: 401
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse404 = {
+  data: NotFoundResponse
+  status: 404
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse422 = {
+  data: ValidationResponse
+  status: 422
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponseSuccess = (postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse200) & {
+  headers: Headers;
+};
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponseError = (postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse400 | postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse401 | postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse404 | postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse409 | postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse422) & {
+  headers: Headers;
+};
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse = (postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponseSuccess | postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponseError)
+
+export const getPostBooksBookIdChaptersChapterIdAiSuggestionsApplyUrl = (bookId: string,
+    chapterId: string,) => {
+
+
+
+
+  return `/books/${bookId}/chapters/${chapterId}/ai-suggestions/apply`
+}
+
+/**
+ * The suggestion is data, not authority. Revalidate all target IDs,
+ * world/book membership, field allowlists, custom attribute schemas,
+ * and expected target version. A consumed suggestion ID and the write
+ * commit atomically. Reusing a suggestion ID in the same chapter and
+ * kind returns the original result without another write; reusing it
+ * for another chapter or kind returns 409.
+ * @summary Apply one explicitly accepted AI suggestion
+ */
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApply = async (bookId: string,
+    chapterId: string,
+    aiApplyRequest: AiApplyRequest, options?: RequestInit): Promise<postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+const res = await fetch(getPostBooksBookIdChaptersChapterIdAiSuggestionsApplyUrl(bookId,chapterId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(aiApplyRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as postBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse
+}
+
+
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse200 = {
+  data: DataAiDecline
+  status: 200
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse401 = {
+  data: UnauthorizedResponse
+  status: 401
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse404 = {
+  data: NotFoundResponse
+  status: 404
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse422 = {
+  data: ValidationResponse
+  status: 422
+}
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponseSuccess = (postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse200) & {
+  headers: Headers;
+};
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponseError = (postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse401 | postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse404 | postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse422) & {
+  headers: Headers;
+};
+
+export type postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse = (postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponseSuccess | postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponseError)
+
+export const getPostBooksBookIdChaptersChapterIdAiSuggestionsDeclineUrl = (bookId: string,
+    chapterId: string,) => {
+
+
+
+
+  return `/books/${bookId}/chapters/${chapterId}/ai-suggestions/decline`
+}
+
+/**
+ * @summary Remember a declined AI suggestion for this chapter
+ */
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDecline = async (bookId: string,
+    chapterId: string,
+    aiDeclineRequest: AiDeclineRequest, options?: RequestInit): Promise<postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+const res = await fetch(getPostBooksBookIdChaptersChapterIdAiSuggestionsDeclineUrl(bookId,chapterId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(aiDeclineRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as postBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse
 }
 
 

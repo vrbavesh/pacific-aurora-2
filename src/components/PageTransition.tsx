@@ -63,8 +63,8 @@ export function GlassPanel({ children, className = "", hover = false }: { childr
   return (
     <motion.div
       className={`
-        relative rounded-2xl border border-white/10
-        bg-white/5 backdrop-blur-2xl
+        relative rounded-2xl border border-border
+        bg-surface-wash backdrop-blur-2xl
         shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]
         ${className}
       `}

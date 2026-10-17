@@ -1,11 +1,62 @@
 # Implementation status
 
-Last reviewed: 2026-10-10.
+Last reviewed: 2026-10-17.
 
-Scope authority: `C:/pacificaurora/Pacific Aurora — Project Specification.md`.
-Implementation order: `plans/pacific-aurora-blueprint.md`.
+V1 scope authority: `C:/pacificaurora/Pacific Aurora — Project Specification.md`.
+V2 scope authority: `plans/Pacific Aurora — Project Specification - V2.pdf`.
+V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 
-## Completed and verified
+## Current V2 branch status
+
+- Version 2.1.0 changes AI review to the latest 500 words every five minutes
+  while Writer remains open, with fresh World Management comparison and
+  chapter-scoped declines persisted across sign-ins/devices. Migration 0007
+  is applied only to the isolated `pa-newbranchtest` preview project; deployed
+  V1 remains unchanged. Lint, typecheck, 82 default tests, and isolated build
+  pass. Full Chromium was 26/27; the unrelated sign-in consent case passed on
+  isolated rerun.
+- Patch 2.0.5 replaces the AI prompt with owner-supplied extraction rules,
+  real schema fields, and a sword-as-item example. `AI_BASE_URL` now accepts a
+  configured loopback Ollama port rather than only port 11434. A local model
+  probe classified a named sword as an item, not a character. The service now
+  filters same-kind duplicate-name creates. Lint, typecheck, 78 default tests,
+  and an isolated production build pass;
+  no preview dispatch or database state was changed.
+- Patch 2.0.4 accepts up to eight validated AI cards from an overlong model
+  response and raises the local Ollama deadline to 120 seconds. The saved
+  500-word chapter reproduced a 60-second timeout and a nine-card response
+  rejected as 502. A read-only replay with the patch returned one usable card
+  in 65 seconds. Lint, typecheck, 75 default tests, and an isolated production
+  build pass. No preview dispatch or database state was changed by this fix.
+- Patch 2.0.3 explicitly defaults landing-page body and headings to Times New Roman.
+  A computed-font browser regression and production-build check passed, as did lint,
+  typecheck, 74 default tests, and build. No deployed V1 change.
+- Patch 2.0.2 fixes initial Writer word count and initializes new AI checkpoints at
+  milestone zero via migration 0006. The isolated preview migration and affected
+  550-word chapter repair are verified; deployed V1.3 is unchanged. Local lint,
+  typecheck, 74 default tests, build, four guarded preview AI-state tests, and all
+  26 Chromium cases and a route-to-local-Ollama-to-apply smoke passed, although
+  the browser runner did not exit cleanly. No disposable AI users remain.
+- Version 2.0.0 is implemented on `codex/pacific-aurora-v2`, not merged or
+  deployed. Deployed V1.3 and its database remain unchanged.
+- V2 steps 1–8 are implemented. Local lint, typecheck, 73 default tests, the
+  production build, and 24 browser tests pass; contract generation has no drift.
+- On the isolated V2 preview database, five AI state/apply tests, six two-user
+  authorization groups covering 54 dynamic routes, and one route-to-Ollama-to-
+  apply test pass. Temporary accounts were removed.
+- Local Ollama smoke passes with a 4,867-byte prompt and 8.7–13.5-second warm
+  latency. The local 120-second timeout can still expire on a very slow model.
+- Production dependencies have zero npm advisories. The full development tree
+  has five high-severity advisories in the ESLint dependency chain with no
+  patched `braces` release; recheck before merge.
+- Privacy and Terms disclose provider transmission and Accept-only writes;
+  the owner approved the wording. Production Groq was not tested because the
+  owner chose local Ollama for this pass.
+- Production rollout still requires explicit approval, V2 migrations 0003,
+  0004, 0005, 0006, then 0007 on the deployed project, production provider configuration,
+  and a disposable-account post-deploy smoke. See `deployment-checklist.md`.
+
+## V1.3 historical verification
 
 - The initial Supabase schema is present in the live project: 15 tables with RLS.
 - The live two-user authorization suite passes all 6 test groups. It checks the
@@ -38,14 +89,15 @@ Implementation order: `plans/pacific-aurora-blueprint.md`.
   the 11 opt-in live tests skipped by default; all 14 Playwright tests pass; and
   the optimized Next.js production build succeeds.
 
-## Release steps remaining
+## V2 release steps remaining
 
-1. Commit and deploy the exact verified revision.
-2. Run the post-deploy smoke path on the production origin, including account
-   deletion with a disposable test account.
-3. Tag the deployed revision so the released state is reproducible.
+1. Obtain explicit owner approval to merge and deploy the verified V2 revision.
+2. Back up deployed V1 data; apply 0003 through 0007 in order.
+3. Configure the production AI provider and run its smoke path.
+4. Deploy and smoke auth, Writer, AI apply, world data, and deletion with a
+   disposable account; then tag the deployed revision.
 
-## Explicitly excluded by direction
+## V1.3 historical exclusions
 
 - Production authentication/provider/environment configuration is left as-is.
 - Previously accepted visual/spec deviations are left as-is. Accessibility fixes

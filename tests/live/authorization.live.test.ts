@@ -18,6 +18,10 @@ import * as chapterRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/rou
 import * as chapterPointsRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/important-points/route";
 import * as chapterPointRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/important-points/[pointId]/route";
 import * as chapterMoveRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/move/route";
+import * as aiEligibilityRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/eligibility/route";
+import * as aiAnalysisRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/route";
+import * as aiApplyRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/apply/route";
+import * as aiDeclineRoute from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/decline/route";
 import * as bookOpenRoute from "@/app/api/books/[bookId]/open/route";
 import * as characterRoute from "@/app/api/characters/[entityId]/route";
 import * as timelinesRoute from "@/app/api/characters/[entityId]/timelines/route";
@@ -130,12 +134,19 @@ async function createSession(
 function request(path: string, method: string, token?: string): Request {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const chapterId = path.match(/\/chapters\/([^/]+)/)?.[1];
+  const body = path.endsWith("/ai-suggestions/apply") || path.endsWith("/ai-suggestions/decline")
+    ? { suggestion: { suggestionId: randomUUID(), kind: "chapter_point", action: "add_point", chapterId,
+      changes: { content: "A hidden point" }, summary: "A hidden point", sourceExcerpt: null } }
+    : path.endsWith("/ai-suggestions")
+      ? { text: Array(500).fill("word").join(" "), wordCount: 500, milestone: 1, checkpointVersion: 0 }
+      : { name: "unauthorized", direction: "up" };
   return new Request(`http://authorization.test${path}`, {
     method,
     headers,
     ...(method === "GET" || method === "HEAD"
       ? {}
-      : { body: JSON.stringify({ name: "unauthorized", direction: "up" }) }),
+      : { body: JSON.stringify(body) }),
   });
 }
 
@@ -540,6 +551,10 @@ liveDescribe("live two-user authorization and RLS", () => {
       [chapterPointsRoute.POST as RouteHandler, `/api/books/${b}/chapters/${c}/important-points`, "POST", { bookId: b, chapterId: c }],
       [chapterPointRoute.DELETE as RouteHandler, `/api/books/${b}/chapters/${c}/important-points/${cp}`, "DELETE", { bookId: b, chapterId: c, pointId: cp }],
       [chapterMoveRoute.POST as RouteHandler, `/api/books/${b}/chapters/${c}/move`, "POST", { bookId: b, chapterId: c }],
+      [aiEligibilityRoute.GET as RouteHandler, `/api/books/${b}/chapters/${c}/ai-suggestions/eligibility`, "GET", { bookId: b, chapterId: c }],
+      [aiAnalysisRoute.POST as RouteHandler, `/api/books/${b}/chapters/${c}/ai-suggestions`, "POST", { bookId: b, chapterId: c }],
+      [aiApplyRoute.POST as RouteHandler, `/api/books/${b}/chapters/${c}/ai-suggestions/apply`, "POST", { bookId: b, chapterId: c }],
+      [aiDeclineRoute.POST as RouteHandler, `/api/books/${b}/chapters/${c}/ai-suggestions/decline`, "POST", { bookId: b, chapterId: c }],
       [bookOpenRoute.POST as RouteHandler, `/api/books/${b}/open`, "POST", { bookId: b }],
       [characterRoute.PATCH as RouteHandler, `/api/characters/${ch}`, "PATCH", { entityId: ch }],
       [characterRoute.DELETE as RouteHandler, `/api/characters/${ch}`, "DELETE", { entityId: ch }],
@@ -564,6 +579,6 @@ liveDescribe("live two-user authorization and RLS", () => {
     ];
 
     for (const routeCase of cases) await expectNotFound(...routeCase);
-    expect(cases).toHaveLength(51);
+    expect(cases).toHaveLength(54);
   }, 180_000);
 });

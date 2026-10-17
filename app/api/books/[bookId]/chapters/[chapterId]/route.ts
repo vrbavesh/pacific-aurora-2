@@ -4,6 +4,7 @@ import { getContext } from "@/src/server/context";
 import { optionalName, readJson } from "@/src/server/http";
 import { ChapterRepositoryImpl } from "@/src/server/repositories/supabase";
 import { chapterService } from "@/src/server/services";
+import { optionalChapterContent } from "@/src/server/chapter-content";
 
 type Ctx = { params: Promise<{ bookId: string; chapterId: string }> };
 
@@ -24,14 +25,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     const c = await getContext(req);
     const body = await readJson(req);
     const name = optionalName(body);
-    const content =
-      typeof body.content === "object" && body.content !== null
-        ? (body.content as object)
-        : body.content === undefined
-          ? undefined
-          : (() => {
-              throw new ValidationError("content must be an object");
-            })();
+    const content = optionalChapterContent(body.content);
     if (name === undefined && content === undefined) {
       throw new ValidationError("Provide name and/or content");
     }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import GoogleAuthButton from "@/src/components/GoogleAuthButton";
-import { redirectAfterAuth, setToken } from "@/src/lib/api/client";
+import { redirectAfterAuth, setSession } from "@/src/lib/api/client";
 
 export default function SigninPage() {
   const router = useRouter();
@@ -34,8 +34,7 @@ export default function SigninPage() {
         // Uniform calm error as required by specification
         throw new Error("user not found, but don't worry you can try again");
       }
-      const token = data?.data?.session?.access_token;
-      if (typeof token === "string" && token) setToken(token);
+      await setSession(data?.data?.session);
       // Flag check: incomplete profiles go to onboarding, complete ones to home.
       await redirectAfterAuth((path) => {
         router.push(path);
@@ -74,7 +73,7 @@ export default function SigninPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl font-light tracking-tight text-white sm:text-4xl"
+            className="text-3xl font-light tracking-tight text-foreground sm:text-4xl"
           >
             Welcome <span className="font-editorial italic font-normal">back</span>
           </motion.h1>
@@ -95,7 +94,7 @@ export default function SigninPage() {
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-white/95"
+              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-foreground"
             >
               {error}
             </motion.div>
@@ -119,7 +118,7 @@ export default function SigninPage() {
               required
               disabled={loading}
               placeholder="you@example.com or @username"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+              className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
               whileFocus={{ scale: 1.005 }}
             />
           </motion.div>
@@ -148,7 +147,7 @@ export default function SigninPage() {
               required
               disabled={loading}
               placeholder="••••••••••••"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+              className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
               whileFocus={{ scale: 1.005 }}
             />
           </motion.div>
@@ -189,7 +188,7 @@ export default function SigninPage() {
             disabled={loading || !agreed}
             whileHover={{ y: -1, scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60 disabled:hover:scale-100"
+            className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60 disabled:hover:scale-100"
           >
             {loading ? "Signing in…" : "Sign In"}
           </motion.button>
@@ -203,10 +202,10 @@ export default function SigninPage() {
           className="relative my-7"
         >
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/[0.08]" />
+            <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-[10px] uppercase tracking-widest text-foreground-subtle/70">
-            <span className="bg-[#06121e]/90 px-3 py-0.5 rounded-full border border-white/[0.06]">
+            <span className="bg-background-elevated/90 px-3 py-0.5 rounded-full border border-border">
               or continue with
             </span>
           </div>
@@ -219,7 +218,7 @@ export default function SigninPage() {
           <button
             type="button"
             disabled
-            className="flex min-h-[44px] w-full cursor-not-allowed items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium text-foreground-muted/60 opacity-60"
+            className="flex min-h-[44px] w-full cursor-not-allowed items-center justify-center rounded-xl border border-border bg-surface-wash px-4 py-3 text-xs font-medium text-foreground-muted/60 opacity-60"
           >
             Continue with Google
           </button>

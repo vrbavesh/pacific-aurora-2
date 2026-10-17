@@ -4,6 +4,7 @@ import { PencilSimple, Plus, Trash, X } from "@phosphor-icons/react";
 import type { Book, World } from "@/src/lib/api/generated";
 import { StaggerContainer, StaggerItem } from "@/src/components/PageTransition";
 import EntryMenu, { type EntryMenuItem } from "@/src/components/home/EntryMenu";
+import ThemeSettings from "@/src/components/home/ThemeSettings";
 
 interface SidebarNavProps {
   mobileOpen?: boolean;
@@ -33,7 +34,7 @@ function SectionSkeleton() {
       {[0, 1, 2].map((row) => (
         <div
           key={row}
-          className="h-12 animate-pulse border border-white/[0.05] bg-white/[0.03]"
+          className="h-12 animate-pulse border border-border bg-surface-wash"
         />
       ))}
     </div>
@@ -97,7 +98,7 @@ export default function SidebarNav({
     {mobileOpen && <button className="fixed inset-0 z-20 bg-black/60 lg:hidden" onClick={onClose} aria-label="Close navigation" />}
     <aside
       aria-label="Workspace navigation"
-      className={`${mobileOpen ? "fixed inset-y-0 left-0 z-30 flex" : "hidden"} w-72 shrink-0 flex-col border-r border-white/10 bg-[#08141f] lg:static lg:flex`}
+      className={`${mobileOpen ? "fixed inset-y-0 left-0 z-30 flex" : "hidden"} w-72 shrink-0 flex-col border-r border-border bg-background-elevated lg:static lg:flex`}
     >
       <div data-lenis-prevent className="flex-1 overflow-y-auto p-4">
         <button type="button" className="mb-4 p-2 lg:hidden" aria-label="Close workspace navigation" onClick={onClose}><X size={20} /></button>
@@ -108,7 +109,7 @@ export default function SidebarNav({
                 <div className="flex items-center justify-between px-1">
                   <h2
                     id="nav-books-heading"
-                    className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45"
+                    className="text-[10px] font-semibold uppercase tracking-[0.24em] text-foreground-subtle"
                   >
                     Books
                   </h2>
@@ -116,7 +117,7 @@ export default function SidebarNav({
                     type="button"
                     onClick={onCreateBook}
                     aria-label="Create a new book"
-                    className="p-1.5 text-white/45 transition hover:bg-white/[0.07] hover:text-[#2dd4bf] active:scale-95"
+                    className="p-1.5 text-foreground-subtle transition hover:bg-surface-wash hover:text-accent active:scale-95"
                   >
                     <Plus size={15} weight="regular" />
                   </button>
@@ -126,7 +127,7 @@ export default function SidebarNav({
                   {loading ? (
                     <SectionSkeleton />
                   ) : bookRows.length === 0 ? (
-                    <p className="px-1 py-4 text-center text-xs italic text-white/35">
+                    <p className="px-1 py-4 text-center text-xs italic text-foreground-subtle">
                       No books yet
                     </p>
                   ) : (
@@ -134,17 +135,17 @@ export default function SidebarNav({
                       {bookRows.map(({ book, worldName }) => (
                         <li
                           key={book.id}
-                          className="group flex items-center border border-white/[0.06] bg-white/[0.02] transition hover:border-[#2dd4bf]/25 hover:bg-white/[0.04]"
+                          className="group flex items-center border border-border bg-surface-wash transition hover:border-accent/25 hover:bg-surface-wash"
                         >
                           <button
                             type="button"
                             onClick={() => onOpenBook(book)}
                             className="min-w-0 flex-1 px-3 py-2.5 text-left"
                           >
-                            <span className="block truncate text-sm text-white/75 transition group-hover:text-white">
+                            <span className="block truncate text-sm text-foreground transition group-hover:text-foreground">
                               {book.name ?? ""}
                             </span>
-                            <span className="mt-0.5 block truncate text-[10px] text-white/35">
+                            <span className="mt-0.5 block truncate text-[10px] text-foreground-subtle">
                               {worldName}
                             </span>
                           </button>
@@ -162,11 +163,11 @@ export default function SidebarNav({
 
             {/* WORLDS */}
             <StaggerItem delay={0.08}>
-              <section aria-labelledby="nav-worlds-heading" className="border-t border-white/10 pt-6">
+              <section aria-labelledby="nav-worlds-heading" className="border-t border-border pt-6">
                 <div className="flex items-center justify-between px-1">
                   <h2
                     id="nav-worlds-heading"
-                    className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45"
+                    className="text-[10px] font-semibold uppercase tracking-[0.24em] text-foreground-subtle"
                   >
                     Worlds
                   </h2>
@@ -174,7 +175,7 @@ export default function SidebarNav({
                     type="button"
                     onClick={onCreateWorld}
                     aria-label="Create a new world"
-                    className="p-1.5 text-white/45 transition hover:bg-white/[0.07] hover:text-[#2dd4bf] active:scale-95"
+                    className="p-1.5 text-foreground-subtle transition hover:bg-surface-wash hover:text-accent active:scale-95"
                   >
                     <Plus size={15} weight="regular" />
                   </button>
@@ -184,7 +185,7 @@ export default function SidebarNav({
                   {loading ? (
                     <SectionSkeleton />
                   ) : worlds.length === 0 ? (
-                    <p className="px-1 py-4 text-center text-xs italic text-white/35">
+                    <p className="px-1 py-4 text-center text-xs italic text-foreground-subtle">
                       No worlds yet
                     </p>
                   ) : (
@@ -196,17 +197,17 @@ export default function SidebarNav({
                           return (
                             <li
                               key={world.id}
-                              className="group flex items-center border border-white/[0.06] bg-white/[0.02] transition hover:border-[#2dd4bf]/25 hover:bg-white/[0.04]"
+                              className="group flex items-center border border-border bg-surface-wash transition hover:border-accent/25 hover:bg-surface-wash"
                             >
                               <button
                                 type="button"
                                 onClick={() => onOpenWorld(world)}
                                 className="min-w-0 flex-1 px-3 py-2.5 text-left"
                               >
-                                <span className="block truncate text-sm text-white/75 transition group-hover:text-white">
+                                <span className="block truncate text-sm text-foreground transition group-hover:text-foreground">
                                   {world.name ?? ""}
                                 </span>
-                                <span className="mt-0.5 block truncate text-[10px] text-white/35">
+                                <span className="mt-0.5 block truncate text-[10px] text-foreground-subtle">
                                   {count > 0
                                     ? `${count} ${count === 1 ? "book" : "books"}`
                                     : "No books"}
@@ -226,6 +227,7 @@ export default function SidebarNav({
             </StaggerItem>
           </StaggerContainer>
       </div>
+      <ThemeSettings />
     </aside>
     </>
   );

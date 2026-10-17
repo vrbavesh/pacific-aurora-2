@@ -6,8 +6,8 @@ Pacific Aurora is a full-stack authoring and worldbuilding workspace. Fiction ge
 persistent world behind it: characters, places, items, relationships, and user-defined
 custom entity types stay connected to the books written inside them.
 
-**Current version: 1.3.** Recorded in `README.md`. `package.json` still carries `0.1.0`
-and has never been aligned; fix that when you touch it.
+**V2 branch version: 2.1.0.** Recorded in `README.md` and `package.json`.
+V1.3 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
 
@@ -87,7 +87,7 @@ Contract-driven: both sides are generated from or tested against
 ## Where things live
 
 - `app/` — pages, layout, `globals.css`, and `app/api/**` route handlers, one directory per
-  contract path (38 path groups). Pages: landing, `signup`, `signin`, `forgot-password`,
+  contract path (42 path groups). Pages: landing, `signup`, `signin`, `forgot-password`,
   `onboarding`, `home`, `books/[bookId]`, `worlds/[worldId]`, `privacy`, `terms`.
 - `src/components/` — `AuroraBackground`, `AccountMenu`, `PageTransition`,
   `SmoothScrollProvider`, `GoogleAuthButton`, plus `home/` (sidebar, sections, entry menu,
@@ -99,7 +99,9 @@ Contract-driven: both sides are generated from or tested against
   `auth/resend-cooldown`, `repositories/` (interfaces plus Supabase implementations),
   `services/`.
 - `supabase/migrations/` — `0001_pacific_aurora.sql` (schema, RLS, triggers, validators),
-  `0002_atomic_writes.sql` (`move_chapter_atomic`).
+  `0002_atomic_writes.sql` (atomic writes), `0003_ai_analysis_state.sql`,
+  `0004_auth_resend_limits.sql`, `0005_ai_apply_once.sql`, and
+  `0006_ai_new_chapter_checkpoint.sql`, and `0007_ai_sliding_review.sql`.
 - `tests/` — `contract/`, `db/`, `live/`, `e2e/`, `helpers/in-memory.ts`.
 - `plans/` — `pacific-aurora-blueprint.md` (12-step plan), `pacific-aurora-api-design.md`,
   `implementation-status.md`, `deployment-checklist.md`.
@@ -114,8 +116,8 @@ Specification.md` is the only scope authority; the blueprint sets the build orde
 
 **Auth.** Email/password sign-up sends a 6-digit Supabase OTP; expiry and resend cooldown
 are 2 minutes each and resend triggers the same generator. Registration is complete only
-after verification. Google uses an ID-token exchange server-side; an address that already
-owns a mail/password account is refused with 409, never merged. Sign in accepts email **or**
+after verification. Google uses an ID-token exchange server-side; V2 accepts Supabase
+verified-email identity linking (user-approved). Sign in accepts email **or**
 userid. Sign-in failures return one uniform code and message, with calm copy, never a red
 alert.
 
@@ -145,8 +147,10 @@ deletes the auth user and the cascade removes the profile, worlds, books, chapte
 entities, timelines, and relationships. No RLS delete policy is needed because it runs
 through the service-role client.
 
-**Not built.** No settings surface exists; the icon is intentionally absent from `/home` and
-reserved for a future feature. Do not add one without a specification section for it.
+**V2 additions.** Settings selects browser-local Light or Dark. Writer suggestions
+analyze the latest 500 words after a pause once 500 words exist, then every five minutes
+while Writer is open; only Accept applies a card. The server loads current world context
+under RLS. Cards are session-only; chapter-scoped declines persist across devices.
 
 ## Conventions
 
@@ -164,7 +168,7 @@ reserved for a future feature. Do not add one without a specification section fo
 
 ## Frontend notes
 
-- Dark only. Tokens in `globals.css`: near-black navy base, one aurora-teal accent,
+- Light and Dark. Tokens in `globals.css`: near-black navy dark base, one aurora-teal accent,
   Newsreader for display type, a z-index scale. Component classes: `.btn`, `.input`,
   `.frosted-panel`, `.calm-notice`; workspace surfaces live in a `.ws-*` layer.
 - Every animation respects `prefers-reduced-motion`.
@@ -176,14 +180,17 @@ reserved for a future feature. Do not add one without a specification section fo
 
 ## Environment and security
 
-Copy `.env.example` to `.env.local`. All four variables:
+Copy `.env.example` to `.env.local`. Base and V2 provider variables:
 
 | Variable | Scope | Notes |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | browser + server | Bare origin. A `/rest/v1` suffix breaks every call with a 404 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server | Publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | server only | userid sign-in lookup, account deletion |
+| `SUPABASE_SERVICE_ROLE_KEY` | server only | userid lookup, account deletion, AI finalization and resend limits |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | browser | Google Identity Services client |
+| `AI_BASE_URL` | server only | Local Ollama or Groq chat-completions base URL |
+| `AI_MODEL` | server only | Provider model ID |
+| `AI_API_KEY` | server only | Required for Groq; unused locally |
 
 `.env*` is gitignored and no env file is tracked. Never expose the service-role key.
 `NEXT_PUBLIC_*` values are inlined at build time, so a change needs a rebuild, not a reload.
@@ -214,7 +221,7 @@ Client ID in `.env.local`.
   fetch visible rows and narrow by `world_id` in the client. Ownership is still RLS.
 - `optionalString` returns `null` for an explicit `null` so nullable fields can be cleared;
   omission leaves them untouched. `optionalInt` rejects non-integers.
-- The OTP resend cooldown is an in-memory map, so it resets per serverless instance.
+- The OTP resend limit is durable through migration 0004; preview-only until V2 rollout.
 - `src/lib/api/generated.ts` and `schemas.ts` are generated; regenerate instead of editing.
 
 ## Git

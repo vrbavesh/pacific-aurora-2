@@ -19,8 +19,8 @@ interface CreateBookDialogProps {
 const optionClass = (selected: boolean) =>
   `flex-1 border p-3 text-left transition ${
     selected
-      ? "border-[#2dd4bf]/55 bg-[#2dd4bf]/[0.07]"
-      : "border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.04]"
+      ? "border-accent/55 bg-accent/[0.07]"
+      : "border-border bg-surface-wash hover:border-border hover:bg-surface-wash"
   }`;
 
 export default function CreateBookDialog({ open, worlds, onSubmit, onCancel }: CreateBookDialogProps) {
@@ -101,8 +101,8 @@ export default function CreateBookDialog({ open, worlds, onSubmit, onCancel }: C
             transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="frosted-panel relative w-full max-w-lg p-6 sm:p-7"
           >
-            <h2 className="font-serif text-xl text-white">Create a book</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">
+            <h2 className="font-serif text-xl text-foreground">Create a book</h2>
+            <p className="mt-2 text-sm leading-6 text-foreground-muted">
               A book always belongs to a world. Choose one you already have, or start a new
               world with it.
             </p>
@@ -140,8 +140,8 @@ export default function CreateBookDialog({ open, worlds, onSubmit, onCancel }: C
                       onClick={() => setMode("existing")}
                       className={optionClass(mode === "existing")}
                     >
-                      <span className="block text-sm text-white/85">Existing world</span>
-                      <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                      <span className="block text-sm text-foreground">Existing world</span>
+                      <span className="mt-1 block text-[11px] leading-4 text-foreground-subtle">
                         Pick from the worlds you already have
                       </span>
                     </button>
@@ -152,8 +152,8 @@ export default function CreateBookDialog({ open, worlds, onSubmit, onCancel }: C
                     onClick={() => setMode("new")}
                     className={optionClass(mode === "new")}
                   >
-                    <span className="block text-sm text-white/85">New world</span>
-                    <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                    <span className="block text-sm text-foreground">New world</span>
+                    <span className="mt-1 block text-[11px] leading-4 text-foreground-subtle">
                       Start a brand new world
                     </span>
                   </button>
@@ -206,7 +206,7 @@ export default function CreateBookDialog({ open, worlds, onSubmit, onCancel }: C
               )}
 
               {error && (
-                <div className="calm-notice p-3 text-xs leading-5 text-white/95">
+                <div className="calm-notice p-3 text-xs leading-5 text-foreground">
                   {error}
                 </div>
               )}

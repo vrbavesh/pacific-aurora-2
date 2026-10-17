@@ -10,7 +10,7 @@ import CreateBookDialog, { type CreateBookChoice } from "@/src/components/home/C
 import PromptDialog from "@/src/components/home/PromptDialog";
 import SidebarNav from "@/src/components/home/SidebarNav";
 import WorldSections, { type WorldDetails } from "@/src/components/home/WorldSections";
-import { ApiRequestError, apiFetch, getToken } from "@/src/lib/api/client";
+import { ApiRequestError, apiFetch } from "@/src/lib/api/client";
 import type {
   Book,
   Character,
@@ -99,10 +99,6 @@ export default function Home() {
     async (showLoading = true) => {
       if (showLoading) setStatus("loading");
       try {
-        if (!getToken()) {
-          redirectToSignIn();
-          return;
-        }
         const { data: session } = await apiFetch<{ profile: { userId?: string | null; onboardingComplete?: boolean } | null }>("/api/auth/session");
         if (!session.profile?.onboardingComplete || !session.profile.userId) {
           router.replace("/onboarding");
@@ -257,7 +253,7 @@ export default function Home() {
       : "The text and chapters of this book will be deleted. The entities in its world stay untouched.";
 
   return (
-    <main className="relative h-[100dvh] overflow-hidden text-white">
+    <main className="relative h-[100dvh] overflow-hidden text-foreground">
 
       <PageTransition>
         <div className="flex h-[100dvh] w-full">
@@ -290,15 +286,15 @@ export default function Home() {
                 make the menu's fixed click-away overlay cover only the header,
                 and the header must stack above the scrollable middle pane so
                 the account menu paints over it. */}
-            <header className="relative z-[var(--z-sticky)] flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[#050d14]/40 px-4 sm:px-6 lg:justify-end">
+            <header className="relative z-[var(--z-sticky)] flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/40 px-4 sm:px-6 lg:justify-end">
               <button className="ws-button lg:hidden" onClick={() => setNavigationOpen(true)} aria-label="Open workspace navigation">Menu</button>
               <Link
                 href="/home"
                 className="flex items-center gap-2.5 lg:hidden"
                 aria-label="Pacific Aurora home"
               >
-                <span className="h-2 w-2 rounded-full bg-[#2dd4bf] shadow-[0_0_14px_rgba(45,212,191,0.5)]" />
-                <span className="text-xs font-medium uppercase tracking-[0.22em] text-[#b7ddd6]">
+                <span className="h-2 w-2 rounded-full bg-accent shadow-[0_0_14px_rgba(45,212,191,0.5)]" />
+                <span className="text-xs font-medium uppercase tracking-[0.22em] text-foreground-muted">
                   Pacific Aurora
                 </span>
               </Link>

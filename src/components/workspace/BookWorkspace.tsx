@@ -89,6 +89,7 @@ function BookContent({ bookId }: { bookId: string }) {
               chapters={chapters.data}
               requestedChapter={requestedChapter}
               onCreate={() => setTab("timeline")}
+              visible={tab === "writer"}
             />
           </div>
           {tab === "world" && book.data.worldId && (

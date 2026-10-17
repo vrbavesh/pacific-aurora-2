@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Pacific Aurora API
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Canonical contract for Pacific Aurora. The frontend and backend are both
     built against this single artifact.
@@ -104,7 +104,7 @@ paths:
         '401': { $ref: '#/components/responses/UniformSignInFailure' }
   /auth/google:
     post:
-      summary: Sign in or sign up with Google
+      summary: Sign in or sign up with Google; Supabase may link a verified matching email identity
       security: []
       requestBody:
         required: true
@@ -126,11 +126,6 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
-        '409':
-          description: An account already exists for this address with a different sign-in method
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
   /auth/forgot-password:
     post:
       summary: Request a password-reset OTP; the response is uniform whether or not the account exists
@@ -495,6 +490,155 @@ paths:
       summary: Delete an important point
       responses:
         '204': { description: Deleted }
+
+  /books/{bookId}/chapters/{chapterId}/ai-suggestions/eligibility:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    get:
+      summary: Read the durable AI analysis checkpoint and cooldown
+      description: |
+        Safe to call on open, reload, and after a stale request. If no checkpoint
+        row exists, completedMilestone is derived from the saved chapter
+        manuscript without writing state. The global per-user dispatch cooldown
+        is returned separately. Cross-user and missing chapters are identical 404s.
+      responses:
+        '200':
+          description: Current eligibility
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataAiEligibility' }
+              example:
+                data: { completedMilestone: 0, nextEligibleAt: null, checkpointVersion: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /books/{bookId}/chapters/{chapterId}/ai-suggestions:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    post:
+      summary: Analyze a paused 500-word manuscript window for suggestions
+      description: |
+        The browser sends the current unsaved text window. The server reads
+        canonical world data with the caller's RLS client,
+        validates ownership, and sends the full bounded snapshot to its
+        configured model. One provider dispatch per user per five minutes,
+        including failed dispatches. Only a valid response advances the
+        completed milestone. No world data is written by this operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiAnalysisRequest' }
+            example:
+              text: "The north gate opened at dawn."
+              wordCount: 500
+              milestone: 1
+              checkpointVersion: 0
+      responses:
+        '200':
+          description: Zero or more reviewable suggestions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataAiAnalysis' }
+              examples:
+                noSuggestions:
+                  summary: Valid analysis with no actionable change
+                  value:
+                    data:
+                      suggestions: []
+                      completedMilestone: 1
+                      nextEligibleAt: "2026-10-13T12:05:00Z"
+                      checkpointVersion: 1
+                oneSuggestion:
+                  summary: One reviewable chapter point
+                  value:
+                    data:
+                      suggestions:
+                        - suggestionId: "746e064e-2731-45e6-8786-158d5a62d3da"
+                          kind: chapter_point
+                          action: add_point
+                          chapterId: chapter-1
+                          changes: { content: "The north gate opens at dawn." }
+                          summary: Add a chapter timeline point
+                          sourceExcerpt: "The north gate opened at dawn."
+                      completedMilestone: 1
+                      nextEligibleAt: "2026-10-13T12:05:00Z"
+                      checkpointVersion: 1
+        '400': { $ref: '#/components/responses/Validation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/AiRateLimited' }
+        '502': { $ref: '#/components/responses/AiProviderUnavailable' }
+        '503': { $ref: '#/components/responses/AiProviderUnavailable' }
+
+  /books/{bookId}/chapters/{chapterId}/ai-suggestions/apply:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    post:
+      summary: Apply one explicitly accepted AI suggestion
+      description: |
+        The suggestion is data, not authority. Revalidate all target IDs,
+        world/book membership, field allowlists, custom attribute schemas,
+        and expected target version. A consumed suggestion ID and the write
+        commit atomically. Reusing a suggestion ID in the same chapter and
+        kind returns the original result without another write; reusing it
+        for another chapter or kind returns 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiApplyRequest' }
+            example:
+              suggestion:
+                suggestionId: "746e064e-2731-45e6-8786-158d5a62d3da"
+                kind: chapter_point
+                action: add_point
+                chapterId: chapter-1
+                changes: { content: "The north gate opens at dawn." }
+                summary: Add a chapter timeline point
+                sourceExcerpt: "The north gate opened at dawn."
+      responses:
+        '200':
+          description: Applied change
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataAiApply' }
+              example:
+                data:
+                  suggestionId: "746e064e-2731-45e6-8786-158d5a62d3da"
+                  kind: chapter_point
+                  resourceId: point-1
+        '400': { $ref: '#/components/responses/Validation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /books/{bookId}/chapters/{chapterId}/ai-suggestions/decline:
+    parameters:
+      - { $ref: '#/components/parameters/bookId' }
+      - { $ref: '#/components/parameters/chapterId' }
+    post:
+      summary: Remember a declined AI suggestion for this chapter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiDeclineRequest' }
+      responses:
+        '200':
+          description: Decline saved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataAiDecline' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Validation' }
 
   /worlds/{worldId}/characters:
     parameters: [{ $ref: '#/components/parameters/worldId' }]
@@ -1061,6 +1205,258 @@ components:
         content: { type: string }
         position: { type: integer }
         chapterId: { type: string, nullable: true }
+    AiEligibility:
+      type: object
+      additionalProperties: false
+      required: [completedMilestone, nextEligibleAt, checkpointVersion]
+      properties:
+        completedMilestone:
+          type: integer
+          minimum: 0
+          description: Last successfully analyzed 500-word total-count milestone for this chapter.
+        nextEligibleAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: End of the per-user five-minute provider-dispatch cooldown.
+        checkpointVersion:
+          type: integer
+          minimum: 0
+          description: Monotonic version used to detect stale chapter analysis requests.
+    AiNamedRelationship:
+      type: object
+      additionalProperties: false
+      required: [id, entityAId, entityAName, entityBId, entityBName, relationshipType, sentiment]
+      properties:
+        id: { type: string }
+        entityAId: { type: string }
+        entityAName: { type: string }
+        entityBId: { type: string }
+        entityBName: { type: string }
+        relationshipType: { type: string }
+        sentiment: { type: integer, minimum: 0, maximum: 100 }
+    AiChapterPointContext:
+      type: object
+      additionalProperties: false
+      required: [chapterId, chapterName, point]
+      properties:
+        chapterId: { type: string }
+        chapterName: { type: string }
+        point: { $ref: '#/components/schemas/ChapterImportantPoint' }
+    AiCharacterPointContext:
+      type: object
+      additionalProperties: false
+      required: [characterEntityId, characterName, point]
+      properties:
+        characterEntityId: { type: string }
+        characterName: { type: string }
+        point: { $ref: '#/components/schemas/CharacterTimelinePoint' }
+    AiWorldContext:
+      type: object
+      additionalProperties: false
+      description: |
+        Client-submitted context for the active book. The server rebuilds this
+        entire snapshot under the caller's RLS identity before AI dispatch.
+        Collections are complete, never silently truncated.
+      required:
+        - world
+        - characters
+        - places
+        - items
+        - customEntityTypes
+        - customEntities
+        - relationships
+        - chapterPoints
+        - characterTimelinePoints
+      properties:
+        world: { $ref: '#/components/schemas/World' }
+        characters:
+          type: array
+          items: { $ref: '#/components/schemas/Character' }
+        places:
+          type: array
+          items: { $ref: '#/components/schemas/Place' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Item' }
+        customEntityTypes:
+          type: array
+          items: { $ref: '#/components/schemas/CustomEntityTypeDetail' }
+        customEntities:
+          type: array
+          items: { $ref: '#/components/schemas/CustomEntity' }
+        relationships:
+          type: array
+          items: { $ref: '#/components/schemas/AiNamedRelationship' }
+        chapterPoints:
+          type: array
+          items: { $ref: '#/components/schemas/AiChapterPointContext' }
+        characterTimelinePoints:
+          type: array
+          items: { $ref: '#/components/schemas/AiCharacterPointContext' }
+    AiAnalysisRequest:
+      type: object
+      additionalProperties: false
+      required: [text, wordCount, milestone, checkpointVersion]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 30000
+          description: Latest 500-word plain-text window from the paused, possibly unsaved editor.
+        wordCount: { type: integer, minimum: 500 }
+        milestone: { type: integer, minimum: 1 }
+        checkpointVersion: { type: integer, minimum: 0 }
+    AiCharacterSuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, targetEntityId, expectedTargetUpdatedAt, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [character] }
+        action: { type: string, enum: [create, update] }
+        targetEntityId: { type: string, nullable: true }
+        expectedTargetUpdatedAt: { type: string, format: date-time, nullable: true }
+        changes: { $ref: '#/components/schemas/CharacterInput' }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiPlaceSuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, targetEntityId, expectedTargetUpdatedAt, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [place] }
+        action: { type: string, enum: [create, update] }
+        targetEntityId: { type: string, nullable: true }
+        expectedTargetUpdatedAt: { type: string, format: date-time, nullable: true }
+        changes: { $ref: '#/components/schemas/PlaceInput' }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiItemSuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, targetEntityId, expectedTargetUpdatedAt, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [item] }
+        action: { type: string, enum: [create, update] }
+        targetEntityId: { type: string, nullable: true }
+        expectedTargetUpdatedAt: { type: string, format: date-time, nullable: true }
+        changes: { $ref: '#/components/schemas/ItemInput' }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiCustomEntitySuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, entityTypeId, targetEntityId, expectedTargetUpdatedAt, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [custom_entity] }
+        action: { type: string, enum: [create, update] }
+        entityTypeId: { type: string }
+        targetEntityId: { type: string, nullable: true }
+        expectedTargetUpdatedAt: { type: string, format: date-time, nullable: true }
+        changes:
+          type: object
+          additionalProperties: false
+          properties:
+            name: { type: string, minLength: 1 }
+            attributes: { type: object, additionalProperties: true }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiChapterPointSuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, chapterId, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [chapter_point] }
+        action: { type: string, enum: [add_point] }
+        chapterId: { type: string }
+        changes:
+          type: object
+          additionalProperties: false
+          required: [content]
+          properties:
+            content: { type: string, minLength: 1, maxLength: 2000 }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiCharacterTimelinePointSuggestion:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, action, characterEntityId, chapterId, changes, summary, sourceExcerpt]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind: { type: string, enum: [character_timeline_point] }
+        action: { type: string, enum: [add_point] }
+        characterEntityId: { type: string }
+        chapterId: { type: string, nullable: true }
+        changes:
+          type: object
+          additionalProperties: false
+          required: [content]
+          properties:
+            content: { type: string, minLength: 1, maxLength: 2000 }
+        summary: { type: string, minLength: 1, maxLength: 240 }
+        sourceExcerpt: { type: string, maxLength: 320, nullable: true }
+    AiSuggestion:
+      oneOf:
+        - { $ref: '#/components/schemas/AiCharacterSuggestion' }
+        - { $ref: '#/components/schemas/AiPlaceSuggestion' }
+        - { $ref: '#/components/schemas/AiItemSuggestion' }
+        - { $ref: '#/components/schemas/AiCustomEntitySuggestion' }
+        - { $ref: '#/components/schemas/AiChapterPointSuggestion' }
+        - { $ref: '#/components/schemas/AiCharacterTimelinePointSuggestion' }
+      discriminator:
+        propertyName: kind
+        mapping:
+          character: '#/components/schemas/AiCharacterSuggestion'
+          place: '#/components/schemas/AiPlaceSuggestion'
+          item: '#/components/schemas/AiItemSuggestion'
+          custom_entity: '#/components/schemas/AiCustomEntitySuggestion'
+          chapter_point: '#/components/schemas/AiChapterPointSuggestion'
+          character_timeline_point: '#/components/schemas/AiCharacterTimelinePointSuggestion'
+    AiAnalysisResult:
+      type: object
+      additionalProperties: false
+      required: [suggestions, completedMilestone, nextEligibleAt, checkpointVersion]
+      properties:
+        suggestions:
+          type: array
+          maxItems: 8
+          items: { $ref: '#/components/schemas/AiSuggestion' }
+        completedMilestone: { type: integer, minimum: 0 }
+        nextEligibleAt: { type: string, format: date-time, nullable: true }
+        checkpointVersion: { type: integer, minimum: 0 }
+    AiApplyRequest:
+      type: object
+      additionalProperties: false
+      required: [suggestion]
+      properties:
+        suggestion: { $ref: '#/components/schemas/AiSuggestion' }
+    AiDeclineRequest:
+      type: object
+      additionalProperties: false
+      required: [suggestion]
+      properties:
+        suggestion: { $ref: '#/components/schemas/AiSuggestion' }
+    AiDeclineResult:
+      type: object
+      additionalProperties: false
+      required: [declined]
+      properties:
+        declined: { type: boolean, enum: [true] }
+    AiApplyResult:
+      type: object
+      additionalProperties: false
+      required: [suggestionId, kind, resourceId]
+      properties:
+        suggestionId: { type: string, format: uuid }
+        kind:
+          type: string
+          enum: [character, place, item, custom_entity, chapter_point, character_timeline_point]
+        resourceId: { type: string, description: Opaque ID of the created or updated owned resource. }
     Session:
       type: object
       properties:
@@ -1129,6 +1525,30 @@ components:
     DataTimelines: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CharacterTimeline' } } } }
     DataTimelinePoint: { type: object, properties: { data: { $ref: '#/components/schemas/CharacterTimelinePoint' } } }
     DataTimelinePoints: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/CharacterTimelinePoint' } } } }
+    DataAiEligibility:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data: { $ref: '#/components/schemas/AiEligibility' }
+    DataAiAnalysis:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data: { $ref: '#/components/schemas/AiAnalysisResult' }
+    DataAiApply:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data: { $ref: '#/components/schemas/AiApplyResult' }
+    DataAiDecline:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data: { $ref: '#/components/schemas/AiDeclineResult' }
   responses:
     NotFound:
       description: Not found, or the resource belongs to another user
@@ -1160,5 +1580,17 @@ components:
         Retry-After:
           schema: { type: integer, enum: [120] }
           description: Seconds to wait before the OTP resend can be retried.
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    AiRateLimited:
+      description: One provider dispatch per user per five minutes
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1, maximum: 300 }
+          description: Seconds until the next provider dispatch is permitted.
+      content:
+        application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }
+    AiProviderUnavailable:
+      description: The configured model did not return a usable response
       content:
         application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } }

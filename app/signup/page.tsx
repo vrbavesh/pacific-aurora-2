@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import GoogleAuthButton from "@/src/components/GoogleAuthButton";
-import { setToken } from "@/src/lib/api/client";
+import { setSession } from "@/src/lib/api/client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -56,8 +56,7 @@ export default function SignupPage() {
           if (res.status === 410) throw new Error("Code expired. Please resend.");
           throw new Error("Invalid code. Please try again.");
         }
-        const token = data?.data?.session?.access_token;
-        if (typeof token === "string" && token) setToken(token);
+        await setSession(data?.data?.session);
         router.push("/onboarding");
         router.refresh();
       }
@@ -111,7 +110,7 @@ export default function SignupPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl font-light tracking-tight text-white sm:text-4xl"
+            className="text-3xl font-light tracking-tight text-foreground sm:text-4xl"
           >
             {step === "form" ? (
               <>
@@ -142,7 +141,7 @@ export default function SignupPage() {
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-white/95"
+              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-foreground"
             >
               {error}
             </motion.div>
@@ -176,7 +175,7 @@ export default function SignupPage() {
                     required
                     disabled={loading}
                     placeholder="author@pacificaurora.dev"
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                    className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
                     whileFocus={{ scale: 1.005 }}
                   />
                 </motion.div>
@@ -198,7 +197,7 @@ export default function SignupPage() {
                     minLength={8}
                     disabled={loading}
                     placeholder="Minimum 8 characters"
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                    className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
                     whileFocus={{ scale: 1.005 }}
                   />
                 </motion.div>
@@ -239,7 +238,7 @@ export default function SignupPage() {
                   disabled={loading || !agreed}
                   whileHover={{ y: -1, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
+                  className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
                 >
                   {loading ? "Generating verification code…" : "Continue with Email"}
                 </motion.button>
@@ -272,7 +271,7 @@ export default function SignupPage() {
                     inputMode="numeric"
                     disabled={loading}
                     placeholder="••••••"
-                    className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3.5 text-center font-mono text-2xl tracking-[0.5em] text-accent placeholder:text-foreground-subtle/30 transition-all duration-200 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3.5 text-center font-mono text-2xl tracking-[0.5em] text-accent placeholder:text-foreground-subtle/30 transition-all duration-200 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                     whileFocus={{ scale: 1.01 }}
                   />
                 </motion.div>
@@ -282,7 +281,7 @@ export default function SignupPage() {
                   disabled={loading || otp.length < 6}
                   whileHover={{ y: -1, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
+                  className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
                 >
                   {loading ? "Verifying…" : "Confirm & Proceed"}
                 </motion.button>
@@ -298,7 +297,7 @@ export default function SignupPage() {
                     onClick={() => setStep("form")}
                     whileHover={{ x: -4 }}
                     whileTap={{ scale: 0.97 }}
-                    className="hover:text-white transition-colors"
+                    className="hover:text-foreground transition-colors"
                   >
                     ← Edit email
                   </motion.button>
@@ -331,10 +330,10 @@ export default function SignupPage() {
           >
             <div className="relative my-7">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/[0.08]" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] uppercase tracking-widest text-foreground-subtle/70">
-                <span className="bg-[#06121e]/90 px-3 py-0.5 rounded-full border border-white/[0.06]">
+                <span className="bg-background-elevated/90 px-3 py-0.5 rounded-full border border-border">
                   or register with
                 </span>
               </div>
@@ -346,7 +345,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 disabled
-                className="flex min-h-[44px] w-full cursor-not-allowed items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium text-foreground-muted/60 opacity-60"
+                className="flex min-h-[44px] w-full cursor-not-allowed items-center justify-center rounded-xl border border-border bg-surface-wash px-4 py-3 text-xs font-medium text-foreground-muted/60 opacity-60"
               >
                 Continue with Google
               </button>

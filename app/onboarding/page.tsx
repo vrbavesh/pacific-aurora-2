@@ -80,7 +80,7 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent/90"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-wash px-3.5 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent/90"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span>Onboarding</span>
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl font-light tracking-tight text-white sm:text-4xl"
+            className="text-3xl font-light tracking-tight text-foreground sm:text-4xl"
           >
             Identity & <span className="font-editorial italic font-normal">Origins</span>
           </motion.h1>
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-white/95"
+              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-foreground"
             >
               {error}
             </motion.div>
@@ -135,7 +135,7 @@ export default function OnboardingPage() {
               required
               disabled={loading}
               placeholder="e.g. Ursula K. Le Guin"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+              className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
               whileFocus={{ scale: 1.005 }}
             />
             <motion.p
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
                 required
                 disabled={loading}
                 placeholder="author_handle"
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] pl-9 pr-4 py-3 font-mono text-sm text-foreground placeholder:text-foreground-subtle/40 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-surface-wash pl-9 pr-4 py-3 font-mono text-sm text-foreground placeholder:text-foreground-subtle/40 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
                 whileFocus={{ scale: 1.005 }}
               />
             </motion.div>
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 text-center"
+          className="rounded-xl border border-border bg-surface-wash p-4 text-center"
         >
           <span className="text-[10px] uppercase tracking-widest text-foreground-subtle block mb-1">
             Author Card Preview
@@ -202,7 +202,7 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="font-editorial text-base text-white block"
+            className="font-editorial text-base text-foreground block"
           >
             {username || "Author Name"}
           </motion.span>
@@ -221,7 +221,7 @@ export default function OnboardingPage() {
           disabled={loading || !username.trim() || !userId.trim()}
           whileHover={{ y: -1, scale: 1.01 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
+          className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
         >
           {loading ? "Establishing identity…" : "Enter Your Workspace"}
         </motion.button>

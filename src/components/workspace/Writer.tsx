@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import CharacterCount from "@tiptap/extension-character-count";
+import { TextStyleKit } from "@tiptap/extension-text-style";
+import TextAlign from "@tiptap/extension-text-align";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   TextB,
@@ -15,21 +16,68 @@ import {
   X,
 } from "@phosphor-icons/react";
 import type { Chapter, ChapterContent } from "@/src/lib/api/generated";
+import { countWords, latestWordWindow } from "@/src/lib/ai-words";
 import { button, Confirm, message, write } from "./shared";
+import WriterSuggestions, { type WriterSnapshot } from "./WriterSuggestions";
+
+export const WRITER_FONTS = [
+  ["Newsreader", "var(--font-serif), Georgia, serif"],
+  ["Geist", "var(--font-sans), Arial, sans-serif"],
+  ["Georgia", "Georgia, serif"],
+  ["Arial", "Arial, sans-serif"],
+  ["Courier New", "'Courier New', monospace"],
+] as const;
+export const WRITER_SIZES = [
+  "14px",
+  "16px",
+  "18px",
+  "20px",
+  "24px",
+  "30px",
+] as const;
+export const WRITER_COLORS = [
+  ["Default", ""],
+  ["Teal", "var(--writer-teal)"],
+  ["Blue", "var(--writer-blue)"],
+  ["Rose", "var(--writer-rose)"],
+] as const;
+export const WRITER_HIGHLIGHTS = [
+  ["None", ""],
+  ["Teal", "var(--writer-highlight-teal)"],
+  ["Blue", "var(--writer-highlight-blue)"],
+  ["Amber", "var(--writer-highlight-amber)"],
+] as const;
+
+export function safeWriterLink(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 function ChapterEditor({
   chapter,
   bookId,
   onDirty,
+  onContent,
+  snapshot,
 }: {
   chapter: Chapter;
   bookId: string;
   onDirty: (id: string, dirty: boolean) => void;
+  onContent: (id: string, text: string) => void;
+  snapshot?: WriterSnapshot;
 }) {
   const cache = useQueryClient();
   const [status, setStatus] = useState("Saved");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [linkEntry, setLinkEntry] = useState(false);
+  const [linkValue, setLinkValue] = useState("");
   const revision = useRef(0);
   const draftKey = `pacific_aurora_draft:${bookId}:${chapter.id}`;
   const [draft] = useState<ChapterContent | null>(() => {
@@ -50,8 +98,12 @@ function ChapterEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit,
+      TextStyleKit,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right"],
+      }),
       Placeholder.configure({ placeholder: "Begin here..." }),
-      CharacterCount,
     ],
     content:
       draft ??
@@ -66,8 +118,10 @@ function ChapterEditor({
         "aria-multiline": "true",
       },
     },
+    onCreate: ({ editor: created }) => onContent(chapter.id!, created.getText()),
     onUpdate: ({ editor: changed }) => {
       revision.current += 1;
+      onContent(chapter.id!, changed.getText());
       setStatus("Unsaved changes");
       onDirty(chapter.id!, true);
       try {
@@ -79,13 +133,31 @@ function ChapterEditor({
       }
     },
   });
+  useEffect(() => {
+    if (editor) onContent(chapter.id!, editor.getText());
+  }, [editor, chapter.id, onContent]);
   const state = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
       bold: e?.isActive("bold"),
       italic: e?.isActive("italic"),
       list: e?.isActive("bulletList"),
-      words: e?.storage.characterCount.words() ?? 0,
+      orderedList: e?.isActive("orderedList"),
+      underline: e?.isActive("underline"),
+      strike: e?.isActive("strike"),
+      link: e?.isActive("link"),
+      heading:
+        ([1, 2, 3] as const).find((level) =>
+          e?.isActive("heading", { level }),
+        ) ?? 0,
+      alignment:
+        (["center", "right"] as const).find((alignment) =>
+          e?.isActive({ textAlign: alignment }),
+        ) ?? "left",
+      fontFamily: e?.getAttributes("textStyle").fontFamily ?? "",
+      fontSize: e?.getAttributes("textStyle").fontSize ?? "",
+      color: e?.getAttributes("textStyle").color ?? "",
+      backgroundColor: e?.getAttributes("textStyle").backgroundColor ?? "",
     }),
   });
   const save = useCallback(async () => {
@@ -120,13 +192,73 @@ function ChapterEditor({
   return (
     <div
       onKeyDown={(e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
           e.preventDefault();
           void save();
         }
       }}
     >
       <div className="ws-toolbar">
+        <label className="ws-format-field">
+          <span>Font</span>
+          <select
+            aria-label="Font family"
+            value={state?.fontFamily ?? ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor?.chain().focus().setFontFamily(e.target.value).run()
+                : editor?.chain().focus().unsetFontFamily().run()
+            }
+          >
+            <option value="">Default</option>
+            {WRITER_FONTS.map(([label, value]) => (
+              <option key={label} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="ws-format-field">
+          <span>Size</span>
+          <select
+            aria-label="Font size"
+            value={state?.fontSize ?? ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor?.chain().focus().setFontSize(e.target.value).run()
+                : editor?.chain().focus().unsetFontSize().run()
+            }
+          >
+            <option value="">Default</option>
+            {WRITER_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size.slice(0, -2)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="ws-format-field">
+          <span>Style</span>
+          <select
+            aria-label="Paragraph style"
+            value={state?.heading || 0}
+            onChange={(e) => {
+              const level = Number(e.target.value);
+              if (level === 0) editor?.chain().focus().setParagraph().run();
+              else
+                editor
+                  ?.chain()
+                  .focus()
+                  .setHeading({ level: level as 1 | 2 | 3 })
+                  .run();
+            }}
+          >
+            <option value={0}>Paragraph</option>
+            <option value={1}>Heading 1</option>
+            <option value={2}>Heading 2</option>
+            <option value={3}>Heading 3</option>
+          </select>
+        </label>
         <button
           className={button}
           aria-label="Bold"
@@ -137,11 +269,100 @@ function ChapterEditor({
         </button>
         <button
           className={button}
+          aria-label="Underline"
+          aria-pressed={state?.underline}
+          onClick={() => editor?.chain().focus().toggleUnderline().run()}
+        >
+          Underline
+        </button>
+        <button
+          className={button}
+          aria-label="Strikethrough"
+          aria-pressed={state?.strike}
+          onClick={() => editor?.chain().focus().toggleStrike().run()}
+        >
+          Strike
+        </button>
+        <button
+          className={button}
           aria-label="Italic"
           aria-pressed={state?.italic}
           onClick={() => editor?.chain().focus().toggleItalic().run()}
         >
           <TextItalic size={18} />
+        </button>
+        <button
+          className={button}
+          aria-label="Numbered list"
+          aria-pressed={state?.orderedList}
+          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+        >
+          1. List
+        </button>
+        <label className="ws-format-field">
+          <span>Align</span>
+          <select
+            aria-label="Text alignment"
+            value={state?.alignment ?? "left"}
+            onChange={(e) =>
+              editor?.chain().focus().setTextAlign(e.target.value).run()
+            }
+          >
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </label>
+        <label className="ws-format-field">
+          <span>Color</span>
+          <select
+            aria-label="Text color"
+            value={state?.color ?? ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor?.chain().focus().setColor(e.target.value).run()
+                : editor?.chain().focus().unsetColor().run()
+            }
+          >
+            {WRITER_COLORS.map(([label, value]) => (
+              <option key={label} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="ws-format-field">
+          <span>Highlight</span>
+          <select
+            aria-label="Highlight color"
+            value={state?.backgroundColor ?? ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor
+                    ?.chain()
+                    .focus()
+                    .setBackgroundColor(e.target.value)
+                    .run()
+                : editor?.chain().focus().unsetBackgroundColor().run()
+            }
+          >
+            {WRITER_HIGHLIGHTS.map(([label, value]) => (
+              <option key={label} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          className={button}
+          aria-label="Edit link"
+          aria-pressed={state?.link}
+          onClick={() => {
+            setLinkValue(editor?.getAttributes("link").href ?? "");
+            setLinkEntry((value) => !value);
+          }}
+        >
+          Link
         </button>
         <button
           className={button}
@@ -170,6 +391,50 @@ function ChapterEditor({
           Save
         </button>
       </div>
+      {linkEntry && (
+        <form
+          className="ws-link-entry"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const href = safeWriterLink(linkValue);
+            if (!href) {
+              setError("Enter a valid http or https link.");
+              return;
+            }
+            editor
+              ?.chain()
+              .focus()
+              .extendMarkRange("link")
+              .setLink({ href })
+              .run();
+            setError("");
+            setLinkEntry(false);
+          }}
+        >
+          <label htmlFor={`link-${chapter.id}`}>Link URL</label>
+          <input
+            id={`link-${chapter.id}`}
+            className="ws-field"
+            type="url"
+            value={linkValue}
+            onChange={(e) => setLinkValue(e.target.value)}
+            placeholder="https://example.com"
+          />
+          <button className={button} type="submit">
+            Apply link
+          </button>
+          <button
+            className={button}
+            type="button"
+            onClick={() => {
+              editor?.chain().focus().unsetLink().run();
+              setLinkEntry(false);
+            }}
+          >
+            Remove link
+          </button>
+        </form>
+      )}
       {error && (
         <p role="alert" className="px-6 py-3">
           {error} Your text is still here. Try Save again.
@@ -179,7 +444,7 @@ function ChapterEditor({
         <h2 className="mb-8 font-serif text-3xl">{chapter.name}</h2>
         <EditorContent editor={editor} />
         <p className="mt-12 text-right text-xs text-foreground-muted">
-          {state?.words ?? 0} words
+          {snapshot?.wordCount ?? 0} words
         </p>
       </div>
     </div>
@@ -191,11 +456,13 @@ export default function Writer({
   chapters,
   requestedChapter,
   onCreate,
+  visible = true,
 }: {
   bookId: string;
   chapters: Chapter[];
   requestedChapter?: { id: string };
   onCreate: () => void;
+  visible?: boolean;
 }) {
   const [open, setOpen] = useState<string[]>(() =>
     chapters[0]?.id ? [chapters[0].id] : [],
@@ -203,6 +470,15 @@ export default function Writer({
   const [active, setActive] = useState(chapters[0]?.id);
   const [dirty, setDirty] = useState<Record<string, boolean>>({});
   const [closing, setClosing] = useState<string>();
+  const [snapshots, setSnapshots] = useState<Record<string, WriterSnapshot>>({});
+  const reportContent = useCallback((id: string, text: string) => {
+    setSnapshots((previous) => {
+      const wordCount = countWords(text);
+      const windowText = latestWordWindow(text);
+      if (previous[id]?.wordCount === wordCount && previous[id]?.windowText === windowText) return previous;
+      return { ...previous, [id]: { wordCount, windowText, revision: (previous[id]?.revision ?? 0) + 1 } };
+    });
+  }, []);
   const updateDirty = useCallback(
     (id: string, value: boolean) =>
       setDirty((previous) => ({ ...previous, [id]: value })),
@@ -244,6 +520,11 @@ export default function Writer({
       sessionStorage.removeItem(`pacific_aurora_draft:${bookId}:${id}`);
     } catch {}
     setOpen((ids) => ids.filter((value) => value !== id));
+    setSnapshots((previous) => {
+      const next = { ...previous };
+      delete next[id];
+      return next;
+    });
     updateDirty(id, false);
     if (active === id) setActive(open.find((value) => value !== id));
     setClosing(undefined);
@@ -319,11 +600,21 @@ export default function Writer({
                 chapter={chapter}
                 bookId={bookId}
                 onDirty={updateDirty}
+                onContent={reportContent}
+                snapshot={snapshots[id]}
               />
             </div>
           )
         );
       })}
+      <WriterSuggestions
+        bookId={bookId}
+        chapters={chapters}
+        activeChapterId={active}
+        openChapterIds={open}
+        snapshots={snapshots}
+        visible={visible}
+      />
       {closing && (
         <Confirm
           title="Discard unsaved changes?"

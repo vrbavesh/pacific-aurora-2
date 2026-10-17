@@ -77,6 +77,16 @@ test("reduced motion uses the static aurora fallback", async ({ page }) => {
   await expect(page.locator("canvas")).toHaveCount(0);
 });
 
+test("landing typography defaults to Times New Roman", async ({ page }) => {
+  await page.goto("/");
+  const fonts = await page.evaluate(() => ({
+    main: getComputedStyle(document.querySelector("main")!).fontFamily,
+    heading: getComputedStyle(document.querySelector("main h1")!).fontFamily,
+  }));
+  expect(fonts.main).toContain("Times New Roman");
+  expect(fonts.heading).toContain("Times New Roman");
+});
+
 for (const route of ["/", "/books/book-1", "/worlds/world-1"]) {
   test(`${route} has no serious accessibility violations`, async ({ page }) => {
     if (route !== "/") await authenticatedFixture(page);

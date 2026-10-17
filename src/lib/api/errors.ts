@@ -41,7 +41,7 @@ export class ValidationError extends ApiError {
 }
 
 export class RateLimitError extends ApiError {
-  constructor(message = "Too many requests") {
+  constructor(message = "Too many requests", public readonly retryAfterSeconds = 120) {
     super(429, "rate_limited", message);
     this.name = "RateLimitError";
   }
@@ -50,7 +50,7 @@ export class RateLimitError extends ApiError {
 export function errorResponse(err: unknown): NextResponse {
   if (err instanceof ApiError) {
     const headers: Record<string, string> = {};
-    if (err instanceof RateLimitError) headers["Retry-After"] = "120";
+    if (err instanceof RateLimitError) headers["Retry-After"] = String(err.retryAfterSeconds);
     return NextResponse.json(
       {
         error: {

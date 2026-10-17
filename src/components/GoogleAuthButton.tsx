@@ -7,7 +7,7 @@ import {
   apiFetch,
   ApiRequestError,
   redirectAfterAuth,
-  setToken,
+  setSession,
 } from "@/src/lib/api/client";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
@@ -52,6 +52,7 @@ function loadGsi(): Promise<void> {
     gsiLoading = new Promise<void>((resolve, reject) => {
       const script = document.createElement("script");
       script.src = GSI_SRC;
+      script.nonce = document.querySelector<HTMLScriptElement>("script[nonce]")?.nonce ?? "";
       script.async = true;
       script.defer = true;
       const timer = window.setTimeout(
@@ -89,17 +90,16 @@ export default function GoogleAuthButton({ onError }: GoogleAuthButtonProps) {
     postingRef.current = true;
     try {
       const { data } = await apiFetch<{
-        session?: { access_token?: string } | null;
+        session?: { access_token?: string; refresh_token?: string } | null;
       }>("/api/auth/google", {
         method: "POST",
         body: JSON.stringify({ credential }),
       });
-      const token = data.session?.access_token;
-      if (!token) {
+      if (!data.session?.access_token || !data.session.refresh_token) {
         onError(CALM_FAILURE);
         return;
       }
-      setToken(token);
+      await setSession(data.session);
       // Flag check: new/incomplete profiles land on onboarding (username is
       // prefilled there), complete ones go home.
       await redirectAfterAuth((path) => {
@@ -180,7 +180,7 @@ export default function GoogleAuthButton({ onError }: GoogleAuthButtonProps) {
         }
         whileHover={{ y: -1, scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium text-foreground transition-all duration-200 hover:border-white/25 hover:bg-white/[0.07]"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface-wash px-4 py-3 text-xs font-medium text-foreground transition-all duration-200 hover:border-border hover:bg-surface-wash"
       >
         <svg
           className="h-4 w-4"

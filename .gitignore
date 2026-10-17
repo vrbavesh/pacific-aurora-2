@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -42,5 +44,10 @@ next-env.d.ts
 # Browser test artifacts
 /test-results/
 /playwright-report/
-#.md file plans
-/plans
+# Keep release/security records while leaving ad hoc plans untracked.
+/plans/*
+!/plans/deployment-checklist.md
+!/plans/security-review-2026-10-10.md
+
+AGENTS.md
+CLAUDE.md

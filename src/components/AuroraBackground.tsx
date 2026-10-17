@@ -258,7 +258,7 @@ export default function AuroraBackground() {
     return (
       <div
         aria-hidden
-        className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(ellipse_at_top,rgba(45,212,191,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(34,211,238,0.12),transparent_60%),#050d14]"
+        className="aurora-backdrop aurora-static fixed inset-0 pointer-events-none -z-10"
       />
     );
   }
@@ -266,7 +266,7 @@ export default function AuroraBackground() {
   return (
     <div
       aria-hidden
-      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-[#040911]"
+      className="aurora-backdrop fixed inset-0 pointer-events-none -z-10 overflow-hidden"
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 48 }}

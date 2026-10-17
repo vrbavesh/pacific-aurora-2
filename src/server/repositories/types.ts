@@ -13,6 +13,8 @@ import type {
   Profile,
   Relationship,
   World,
+  AiWorldContext,
+  AiSuggestion,
 } from "@/src/lib/api/generated";
 
 export interface WorldRepository {
@@ -141,4 +143,37 @@ export interface ProfileRepository {
     userId: string,
     patch: Partial<Pick<Profile, "username" | "userId">>,
   ): Promise<Profile>;
+}
+
+export interface AiAnalysisEligibility {
+  completedMilestone: number;
+  nextEligibleAt: string | null;
+  checkpointVersion: number;
+}
+
+export interface AiAnalysisReservation extends AiAnalysisEligibility {
+  leaseToken: string;
+}
+
+// Reads/reservations use the caller's JWT. Finalization is server-only after
+// provider validation; its owner ID comes from requireUser, never the browser.
+export interface AiAnalysisStateRepository {
+  eligibility(bookId: string, chapterId: string): Promise<AiAnalysisEligibility>;
+  declined(bookId: string, chapterId: string): Promise<string[]>;
+  decline(bookId: string, chapterId: string, fingerprint: string): Promise<void>;
+  reserve(
+    bookId: string,
+    chapterId: string,
+    milestone: number,
+    checkpointVersion: number,
+  ): Promise<AiAnalysisReservation>;
+  finalize(bookId: string, chapterId: string, leaseToken: string): Promise<AiAnalysisEligibility>;
+}
+
+export interface AiContextRepository {
+  snapshot(bookId: string, chapterId: string): Promise<AiWorldContext>;
+}
+
+export interface AiApplyRepository {
+  apply(bookId: string, chapterId: string, suggestion: AiSuggestion): Promise<string>;
 }

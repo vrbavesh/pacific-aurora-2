@@ -88,7 +88,7 @@ export default function PromptDialog({
             transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="frosted-panel relative w-full max-w-md p-6"
           >
-            <h2 className="font-serif text-xl text-white">{title}</h2>
+            <h2 className="font-serif text-xl text-foreground">{title}</h2>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               <div>
@@ -112,7 +112,7 @@ export default function PromptDialog({
               </div>
 
               {error && (
-                <div className="calm-notice p-3 text-xs leading-5 text-white/95">
+                <div className="calm-notice p-3 text-xs leading-5 text-foreground">
                   {error}
                 </div>
               )}

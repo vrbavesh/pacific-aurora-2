@@ -11,7 +11,7 @@ import {
   User,
   Warning,
 } from "@phosphor-icons/react";
-import { apiFetch, clearToken } from "@/src/lib/api/client";
+import { apiFetch, clearSession } from "@/src/lib/api/client";
 
 interface UserProfile {
   username: string | null;
@@ -51,7 +51,7 @@ export default function AccountMenu() {
     } catch {
       /* session may already be invalid; clear locally either way */
     }
-    clearToken();
+    await clearSession();
     window.location.href = "/";
   };
 
@@ -71,7 +71,7 @@ export default function AccountMenu() {
         method: "DELETE",
         body: JSON.stringify({ confirmation }),
       });
-      clearToken();
+      await clearSession();
       window.location.assign("/");
     } catch (error) {
       setDeleteError(
@@ -85,7 +85,7 @@ export default function AccountMenu() {
 
   if (loading) {
     return (
-      <div className="h-9 w-24 animate-pulse border border-white/10 bg-white/5" />
+      <div className="h-9 w-24 animate-pulse border border-border bg-surface-wash" />
     );
   }
 
@@ -99,9 +99,9 @@ export default function AccountMenu() {
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Open account menu"
-        className="relative z-50 flex items-center gap-2 border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 text-foreground-muted transition-colors hover:bg-white/10 hover:text-foreground"
+        className="relative z-50 flex items-center gap-2 border border-border bg-surface-wash py-1.5 pl-1.5 pr-3 text-foreground-muted transition-colors hover:bg-surface-wash-strong hover:text-foreground"
       >
-        <span className="flex h-7 w-7 items-center justify-center border border-white/10 bg-white/10">
+        <span className="flex h-7 w-7 items-center justify-center border border-border bg-surface-wash-strong">
           <User size={15} weight="regular" />
         </span>
         <span className="hidden text-sm sm:inline">{profile?.username ?? "Account"}</span>
@@ -134,14 +134,14 @@ export default function AccountMenu() {
               transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
               role="menu"
               aria-label="Account"
-              className="absolute right-0 top-full z-50 mt-3 w-72 origin-top-right border border-white/10 bg-[#0a1826]/95 p-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
+              className="absolute right-0 top-full z-50 mt-3 w-72 origin-top-right border border-border bg-background-elevated/95 p-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
             >
-              <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 bg-gradient-to-br from-white/20 to-white/5">
+              <div className="flex items-center gap-3 border-b border-border pb-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-border bg-gradient-to-br from-white/20 to-white/5">
                   <User size={22} weight="regular" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-base font-medium text-white">
+                  <p className="truncate text-base font-medium text-foreground">
                     {profile?.username ?? "Guest"}
                   </p>
                   {profile?.userId && (
@@ -156,18 +156,18 @@ export default function AccountMenu() {
                 <Link
                   href="/onboarding"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-white/5 hover:text-white"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-surface-wash hover:text-foreground"
                 >
                   <PencilSimple size={16} weight="regular" aria-hidden="true" />
                   Edit profile
                 </Link>
               </div>
 
-              <div className="border-t border-white/10 pt-2">
+              <div className="border-t border-border pt-2">
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-white/5 hover:text-white"
+                  className="flex w-full items-center gap-3 px-3 py-2 text-sm text-foreground-muted transition-colors hover:bg-surface-wash hover:text-foreground"
                 >
                   <SignOut size={16} weight="regular" aria-hidden="true" />
                   Log out
@@ -207,14 +207,14 @@ export default function AccountMenu() {
               animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
               exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
               transition={{ duration: reduce ? 0 : 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-md border border-rose-300/25 bg-[#0a1826] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+              className="w-full max-w-md border border-rose-300/25 bg-background-elevated p-6 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
             >
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-rose-300/30 bg-rose-400/10 text-rose-100">
                   <Warning size={20} weight="fill" aria-hidden="true" />
                 </span>
                 <div>
-                  <h2 id="delete-account-title" className="text-lg font-medium text-white">
+                  <h2 id="delete-account-title" className="text-lg font-medium text-foreground">
                     Delete account permanently?
                   </h2>
                   <p
@@ -227,7 +227,7 @@ export default function AccountMenu() {
                 </div>
               </div>
 
-              <label htmlFor="delete-account-confirmation" className="mt-6 block text-sm text-white">
+              <label htmlFor="delete-account-confirmation" className="mt-6 block text-sm text-foreground">
                 Type <span className="font-medium">DELETE</span> to confirm
               </label>
               <input
@@ -238,7 +238,7 @@ export default function AccountMenu() {
                 disabled={deleting}
                 autoComplete="off"
                 spellCheck={false}
-                className="mt-2 w-full border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none transition-colors placeholder:text-foreground-muted focus:border-rose-200 focus:ring-2 focus:ring-rose-200/25 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-2 w-full border border-border bg-surface-wash px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-foreground-muted focus:border-rose-200 focus:ring-2 focus:ring-rose-200/25 disabled:cursor-not-allowed disabled:opacity-60"
                 placeholder="DELETE"
                 aria-describedby={deleteError ? "delete-account-error" : undefined}
               />
@@ -253,7 +253,7 @@ export default function AccountMenu() {
                   type="button"
                   onClick={closeDeleteDialog}
                   disabled={deleting}
-                  className="border border-white/15 px-4 py-2 text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-surface-wash-strong disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>

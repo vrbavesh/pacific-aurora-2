@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const body = await readJson(req);
     const email = requireString(body, "email");
     const type = body.type === "recovery" ? "recovery" : "signup";
-    checkResendCooldown(`${type}:${email}`);
+    await checkResendCooldown(req, email, type);
     const client = anonClient();
     if (type === "recovery") {
       const { error } = await client.auth.resetPasswordForEmail(email);

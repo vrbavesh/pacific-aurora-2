@@ -79,11 +79,11 @@ export default function ConfirmDialog({
             transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="frosted-panel relative w-full max-w-md p-6"
           >
-            <h2 className="font-serif text-xl text-white">{title}</h2>
-            <p className="mt-3 text-sm leading-6 text-white/60">{description}</p>
+            <h2 className="font-serif text-xl text-foreground">{title}</h2>
+            <p className="mt-3 text-sm leading-6 text-foreground-muted">{description}</p>
 
             {error && (
-              <div className="calm-notice mt-4 p-3 text-xs leading-5 text-white/95">
+              <div className="calm-notice mt-4 p-3 text-xs leading-5 text-foreground">
                 {error}
               </div>
             )}

@@ -1,6 +1,7 @@
 # Pacific Aurora
 
-**Version 1.3**
+**Version 2.1.0 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
+V2 migration and release are explicitly approved.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
 persistent world behind it: characters, places, items, relationships, and your own custom
@@ -19,8 +20,8 @@ npm install && npm run dev
 
 - Email and password sign-up with a 6-digit Supabase OTP (2-minute expiry, 2-minute resend
   cooldown, registration incomplete until the mail is verified)
-- Google sign-in through Google Identity Services; an address that already owns a
-  mail/password account is refused rather than merged
+- Google sign-in through Google Identity Services; Supabase may link an identity
+  to an existing account only after verified-email confirmation
 - Password recovery by OTP that doubles as the entry token
 - Onboarding collects a non-unique username and a unique userid; profiles without a userid
   are flagged and redirected back to onboarding
@@ -37,13 +38,20 @@ npm install && npm run dev
 - The middle shows the current world's details as vertical sections; at most 4 sections
   appear, ordered by the newest `updated_at` inside each one, and a world may hold up to
   10 custom sections
+- Settings lets each browser choose Light or Dark, applied before the first paint
 - Clicking an entity opens its world's book on the World section
 
 **Book (`/books/[bookId]`)**
 
 - Horizontal menu: Writer (default), World, Relationships, Timeline
 - Writer is a TipTap editor with chapter tabs, sessionStorage draft recovery, explicit Save,
-  and Ctrl/Cmd+S. A book with no chapters gets an "Introduction" chapter automatically
+  and Ctrl/Cmd+S. It has bounded font, heading, list, alignment, link, color, underline,
+  and strike controls. A book with no chapters gets an "Introduction" chapter automatically
+- Once a chapter reaches 500 words, the optional AI provider reviews its latest 500 words
+  after a pause and again every five minutes while the Writer is open. It compares those
+  words with current World Management data; missing facts become cards. Accept writes a
+  proposed world change; Decline is remembered across sign-ins and devices for that chapter.
+  AI never edits manuscript prose or blocks Save
 - World mirrors the world page: every section, plus/New, right-hand detail panels, deletion
   with confirmation, and character timelines
 - Relationships is a React Flow canvas: add character nodes from the right list, drag them,
@@ -104,13 +112,17 @@ cp .env.example .env.local      # then fill in the values below
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server | Publishable (anon) key |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | Userid sign-in lookup and account deletion. Never exposed to the browser |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | browser | Google Identity Services client ID |
+| `AI_BASE_URL` | server only | Loopback Ollama URL and port (for example `http://localhost:11434/v1`) or `https://api.groq.com/openai/v1` |
+| `AI_MODEL` | server only | Installed Ollama model or configured Groq model ID |
+| `AI_API_KEY` | server only | Required for Groq, unused by local Ollama |
 
 ### Apply the database schema
 
-Run the migrations in order against your project (`supabase/migrations/0001_pacific_aurora.sql`,
-then `0002_atomic_writes.sql`), or link your project with the Supabase CLI and run
-`supabase db push`. They create 15 tables, the enums, row-level security, the triggers, and
-the atomic-write functions.
+Run migrations in order: `0001_pacific_aurora.sql`, `0002_atomic_writes.sql`,
+`0003_ai_analysis_state.sql`, `0004_auth_resend_limits.sql`, and
+`0005_ai_apply_once.sql`, `0006_ai_new_chapter_checkpoint.sql`, and `0007_ai_sliding_review.sql`. The V2 migrations are applied only to the isolated
+preview project so far. Do not run them on the deployed V1 project until the
+V2 rollout is approved; apply 0003 through 0007 in order there before deploying V2 code.
 
 ### Generate the API artifacts and run
 
@@ -155,6 +167,11 @@ RUN_LIVE_ACCOUNT_DELETE=1 npm test       # cascade removal of an account and eve
 
 They read credentials from `.env.local`.
 
+V2 also has opt-in preview AI state, apply, route-to-provider, and local Ollama smoke
+suites. Use only an isolated V2 project with `PA_AI_PREVIEW_*` credentials; never
+point those suites at the deployed V1 project. See the guarded test files under
+`tests/live/` and the [V2 deployment checklist](plans/deployment-checklist.md).
+
 ---
 
 ## Project structure
@@ -167,7 +184,7 @@ app/
   books/[bookId]/              book workspace route
   worlds/[worldId]/            world workspace route
   privacy/ terms/              legal pages
-  api/**                       38 route groups, one directory per contract path
+  api/**                       41 route groups, one directory per contract path
   globals.css                  design tokens, component classes, workspace layer
 src/
   components/
@@ -178,6 +195,7 @@ src/
     GoogleAuthButton.tsx       GIS button with a calm unavailable fallback
     home/                      SidebarNav, WorldSections, EntryMenu, dialogs
     workspace/                 BookWorkspace, WorldWorkspace, WorldEntities, Writer,
+                               WriterSuggestions,
                                ChapterTimeline, Relationships, CharacterHistory, shared
   lib/
     api/client.ts              apiFetch, token storage, redirectAfterAuth
@@ -194,11 +212,11 @@ src/
     http.ts                    body parsing and validation helpers
     ownership.ts               ownedOr404
     resource-scope.ts          parent-existence checks for nested routes
-    auth/resend-cooldown.ts    OTP resend cooldown
+    auth/resend-cooldown.ts    durable OTP resend limits
     repositories/              interfaces plus Supabase implementations
     services/                  business rules per aggregate
 contracts/pacific-aurora.openapi.yaml   the single source of truth for the API
-supabase/migrations/         0001 schema, 0002 atomic writes
+supabase/migrations/         0001-0007 schema, atomic writes, V2 AI and resend limits
 tests/                        contract, db, live, e2e, helpers
 plans/                        blueprint, api design, status, deployment checklist
 .github/workflows/verify.yml  CI: lint, typecheck, test, build, browser tests
@@ -234,10 +252,11 @@ Design rules the codebase holds to:
 
 ## Data model
 
-15 tables: `profiles`, `worlds`, `books`, `chapters`, `chapter_important_points`,
+The original 15 tables are `profiles`, `worlds`, `books`, `chapters`, `chapter_important_points`,
 `world_entities`, `characters`, `places`, `items`, `custom_entity_types`,
 `custom_entity_attributes`, `custom_entities`, `character_book_timelines`,
 `character_timeline_points`, `entity_relationships`.
+V2 adds three private AI state tables and a private resend-limit table.
 
 - Every table has row-level security scoped to the owner through world ownership.
 - Cascades run from `auth.users` down: deleting an account removes the profile, then every
@@ -258,9 +277,8 @@ Design rules the codebase holds to:
   and connect sources are pinned to self, the Supabase origin, and Google; frame-ancestors
   is `none`; HSTS, `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy` are
   set on every response.
-- The **service-role key is server-only**. It appears only in `src/lib/api/admin.ts` and the
-  live test helpers, lives in `.env.local`, which is gitignored, and is used for the userid
-  sign-in lookup and account deletion.
+- The **service-role key is server-only**. It lives in `.env.local`, which is gitignored,
+  and is used for userid lookup, account deletion, auth resend limits, and AI finalization.
 - **RLS everywhere**, with ownership enforced by the authenticated request client.
 - **Account deletion** requires typing `DELETE` and cascades from `auth.users`.
 - Privacy policy and terms are published and acceptance is required at sign-up and sign-in.
@@ -269,7 +287,7 @@ Design rules the codebase holds to:
 
 ## Design system
 
-- Dark only. Tokens live in `app/globals.css`: a near-black navy base, a single aurora-teal
+- Light and Dark themes use tokens in `app/globals.css`: a near-black navy dark base, a single aurora-teal
   accent, Newsreader for editorial display type, and a z-index scale.
 - Components are built from `.btn`, `.input`, `.frosted-panel`, and `.calm-notice`, with the
   workspace surfaces in a `.ws-*` layer.
@@ -285,11 +303,11 @@ Design rules the codebase holds to:
 - **Vitest** (`npm test`): contract tests that the artifact declares the expected paths and
   that responses validate against the generated schemas; migration tests asserting tables,
   RLS, enums, triggers, and function coverage; service tests with in-memory repositories;
-  and the three live suites listed above.
+  and guarded live/preview suites listed above.
 - **Playwright** (`npm run test:e2e`): writer saves and draft recovery, failed-save
   recovery, chapter navigation, item wielder clearing, onboarding gating, mobile layout,
-  graph node creation, account deletion, and the legal pages, all against mocked API
-  responses.
+  graph node creation, account deletion, legal pages, themes, and the AI suggestion panel,
+  all against mocked API responses.
 - **CI** (`.github/workflows/verify.yml`) runs lint, typecheck, unit tests, build, and the
   browser suite on every push and pull request.
 
@@ -297,12 +315,16 @@ Design rules the codebase holds to:
 
 ## Deployment
 
-1. Set the four environment variables at production scope on your host.
-2. Confirm the Supabase project has both migrations applied.
-3. In Supabase: set Site URL to the production origin, configure custom SMTP so OTP mail
+1. Keep V1.3 deployed until the V2 branch passes its release gate and you approve rollout.
+2. Apply V2 migrations 0003 through 0007 to the deployed project after backing up
+   and confirming the V1 schema and 0002 are present. The migrations are additive; do not
+   try to reverse them after accepting V2 traffic. Use a forward repair migration instead.
+3. Set the existing Supabase and Google variables plus `AI_BASE_URL`, `AI_MODEL`, and
+   `AI_API_KEY` for Groq at production scope. Never expose the AI key to the browser.
+4. In Supabase: set Site URL to the production origin, configure custom SMTP so OTP mail
    delivers to real users, set the email OTP expiry to 120 seconds, and enable Google with
    the Client ID and Secret.
-4. Deploy (`npm run build` must pass) and repeat the live checks on the production origin.
+5. Deploy (`npm run build` must pass) and repeat the smoke path with disposable accounts.
 
 `plans/deployment-checklist.md` tracks this list; `plans/implementation-status.md` records
 what is built and what remains.

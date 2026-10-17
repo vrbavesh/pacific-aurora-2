@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { redirectAfterAuth, setToken } from "@/src/lib/api/client";
+import { redirectAfterAuth, setSession } from "@/src/lib/api/client";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -58,8 +58,7 @@ export default function ForgotPasswordPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error?.message ?? "Password reset failed");
-      const token = json?.data?.session?.access_token;
-      if (typeof token === "string" && token) setToken(token);
+      await setSession(json?.data?.session);
       setSuccess("Your password has been reset. Letting you in…");
       // Spec: the reset lets the user in, routed by the completion flag.
       setTimeout(() => {
@@ -118,7 +117,7 @@ export default function ForgotPasswordPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent/90"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-wash px-3.5 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-accent/90"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span>Recovery</span>
@@ -127,7 +126,7 @@ export default function ForgotPasswordPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl font-light tracking-tight text-white sm:text-4xl"
+            className="text-3xl font-light tracking-tight text-foreground sm:text-4xl"
           >
             Reset your <span className="font-editorial italic font-normal">password</span>
           </motion.h1>
@@ -150,7 +149,7 @@ export default function ForgotPasswordPage() {
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-white/95"
+              className="calm-notice mb-6 rounded-2xl p-3.5 text-center text-xs leading-relaxed text-foreground"
             >
               {error}
             </motion.div>
@@ -194,7 +193,7 @@ export default function ForgotPasswordPage() {
                   required
                   disabled={loading}
                   placeholder="author@pacificaurora.dev"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                  className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
                   whileFocus={{ scale: 1.005 }}
                 />
               </motion.div>
@@ -204,7 +203,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 whileHover={{ y: -1, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
+                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-60"
               >
                 {loading ? "Transmitting code…" : "Send Reset Code"}
               </motion.button>
@@ -238,7 +237,7 @@ export default function ForgotPasswordPage() {
                   inputMode="numeric"
                   disabled={loading}
                   placeholder="••••••"
-                  className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-center font-mono text-xl tracking-[0.4em] text-accent placeholder:text-foreground-subtle/30 transition-all duration-200 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-center font-mono text-xl tracking-[0.4em] text-accent placeholder:text-foreground-subtle/30 transition-all duration-200 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                   whileFocus={{ scale: 1.01 }}
                 />
               </motion.div>
@@ -260,7 +259,7 @@ export default function ForgotPasswordPage() {
                   minLength={8}
                   disabled={loading}
                   placeholder="Minimum 8 characters"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
+                  className="w-full rounded-xl border border-border bg-surface-wash px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle/50 transition-all duration-200 focus:border-accent/60 focus:bg-surface-wash focus:outline-none focus:ring-1 focus:ring-accent/40 disabled:opacity-50"
                   whileFocus={{ scale: 1.005 }}
                 />
               </motion.div>
@@ -270,7 +269,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading || otp.length < 6 || newPassword.length < 8}
                 whileHover={{ y: -1, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-[#040911] shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
+                className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold tracking-wide text-accent-foreground shadow-[0_0_24px_rgba(45,212,191,0.25)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.45)] hover:brightness-105 disabled:opacity-50"
               >
                 {loading ? "Updating password…" : "Reset & Save Password"}
               </motion.button>
@@ -286,7 +285,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => setStep("email")}
                   whileHover={{ x: -4 }}
                   whileTap={{ scale: 0.97 }}
-                  className="hover:text-white transition-colors"
+                  className="hover:text-foreground transition-colors"
                 >
                   ← Change email
                 </motion.button>

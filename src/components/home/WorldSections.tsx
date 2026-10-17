@@ -50,13 +50,13 @@ function newest(values: Array<string | null | undefined>): string | undefined {
 function Skeleton() {
   return (
     <div className="mx-auto w-full max-w-[1400px] px-5 py-8 sm:px-8" aria-hidden="true">
-      <div className="h-3 w-28 animate-pulse rounded bg-white/[0.06]" />
-      <div className="mt-3 h-9 w-64 animate-pulse rounded bg-white/[0.05]" />
+      <div className="h-3 w-28 animate-pulse rounded bg-surface-wash" />
+      <div className="mt-3 h-9 w-64 animate-pulse rounded bg-surface-wash" />
       <div className={`mt-7 ${GRID}`}>
         {[0, 1, 2, 3].map((cell) => (
           <div
             key={cell}
-            className="min-h-[240px] animate-pulse border border-white/10 bg-white/[0.03]"
+            className="min-h-[240px] animate-pulse border border-border bg-surface-wash"
           />
         ))}
       </div>
@@ -83,7 +83,7 @@ export default function WorldSections({
     return (
       <div className="flex min-h-full flex-col items-center justify-center px-6 py-16">
         <div className="calm-notice w-full max-w-md p-6 text-center">
-          <p className="text-sm leading-6 text-white/90">{errorMessage}</p>
+          <p className="text-sm leading-6 text-foreground">{errorMessage}</p>
           <button type="button" onClick={onRetry} className="btn btn-secondary mt-5 rounded-none">
             Try again
           </button>
@@ -100,13 +100,13 @@ export default function WorldSections({
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center"
         >
-          <div className="h-64 w-[70%] max-w-2xl bg-[#2dd4bf]/[0.07] blur-3xl" />
+          <div className="h-64 w-[70%] max-w-2xl bg-accent/[0.07] blur-3xl" />
         </div>
         <motion.h1
           initial={reduce ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduce ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative max-w-[16ch] text-balance font-serif text-4xl leading-[1.15] text-white/85 sm:text-5xl"
+          className="relative max-w-[16ch] text-balance font-serif text-4xl leading-[1.15] text-foreground sm:text-5xl"
         >
           THE SCRATCHPAD IS EMPTY, LETS CREATE SOMETHING ON IT!
         </motion.h1>
@@ -190,10 +190,10 @@ export default function WorldSections({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduce ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#6ee7d8]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-accent">
           Current world
         </p>
-        <h1 className="mt-2 font-serif text-3xl text-white sm:text-4xl">
+        <h1 className="mt-2 font-serif text-3xl text-foreground sm:text-4xl">
           {anchorWorld.name ?? ""}
         </h1>
       </motion.header>
@@ -209,35 +209,35 @@ export default function WorldSections({
               delay: reduce ? 0 : 0.08 * index,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="flex min-h-[240px] flex-col border border-white/10 bg-[#061019]/70 backdrop-blur-sm transition-colors hover:border-white/[0.18]"
+            className="flex min-h-[240px] flex-col border border-border bg-background-elevated/70 backdrop-blur-sm transition-colors hover:border-border"
           >
             <div className="flex items-baseline justify-between gap-2 px-4 pt-4">
-              <h2 className="truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">
+              <h2 className="truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground-subtle">
                 {section.label}
               </h2>
-              <span className="shrink-0 text-[10px] text-white/30">
+              <span className="shrink-0 text-[10px] text-foreground-subtle">
                 {section.entities.length}
               </span>
             </div>
 
             <div className="mt-2.5 flex-1 space-y-1 px-2 pb-3">
               {section.entities.length === 0 ? (
-                <p className="px-2 py-3 text-xs italic text-white/30">Nothing here yet</p>
+                <p className="px-2 py-3 text-xs italic text-foreground-subtle">Nothing here yet</p>
               ) : (
                 section.entities.map((entity) => (
                   <button
                     key={entity.id || entity.name}
                     type="button"
                     onClick={() => onOpenEntity(section.key)}
-                    className="group/row flex w-full items-center justify-between gap-2 border border-transparent px-3 py-2 text-left transition hover:border-white/10 hover:bg-white/[0.05]"
+                    className="group/row flex w-full items-center justify-between gap-2 border border-transparent px-3 py-2 text-left transition hover:border-border hover:bg-surface-wash"
                   >
-                    <span className="min-w-0 flex-1 truncate text-sm text-white/70 transition group-hover/row:text-white">
+                    <span className="min-w-0 flex-1 truncate text-sm text-foreground-muted transition group-hover/row:text-foreground">
                       {entity.name}
                     </span>
                     <CaretRight
                       size={12}
                       weight="bold"
-                      className="shrink-0 text-white/25 transition group-hover/row:text-[#2dd4bf]"
+                      className="shrink-0 text-foreground-subtle transition group-hover/row:text-accent"
                     />
                   </button>
                 ))
@@ -257,12 +257,12 @@ export default function WorldSections({
             ease: [0.16, 1, 0.3, 1],
           }}
           onClick={onCreateCustomSection}
-          className="group flex min-h-[240px] flex-col items-center justify-center gap-3 border border-dashed border-white/15 bg-white/[0.015] p-5 text-center transition hover:border-[#2dd4bf]/40 hover:bg-[#2dd4bf]/[0.04]"
+          className="group flex min-h-[240px] flex-col items-center justify-center gap-3 border border-dashed border-border bg-surface-wash p-5 text-center transition hover:border-accent/40 hover:bg-accent/[0.04]"
         >
-          <span className="flex h-9 w-9 items-center justify-center border border-white/15 text-white/40 transition group-hover:border-[#2dd4bf]/50 group-hover:text-[#2dd4bf]">
+          <span className="flex h-9 w-9 items-center justify-center border border-border text-foreground-subtle transition group-hover:border-accent/50 group-hover:text-accent">
             <Plus size={16} weight="regular" />
           </span>
-          <span className="text-[11px] uppercase tracking-[0.16em] text-white/45 transition group-hover:text-[#a9e8df]">
+          <span className="text-[11px] uppercase tracking-[0.16em] text-foreground-subtle transition group-hover:text-accent">
             Create a new custom section
           </span>
         </motion.button>

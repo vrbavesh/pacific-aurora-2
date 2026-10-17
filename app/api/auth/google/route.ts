@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ConflictError, errorResponse, UnauthorizedError } from "@/src/lib/api/errors";
+import { errorResponse, UnauthorizedError } from "@/src/lib/api/errors";
 import { anonClient } from "@/src/lib/api/session";
 import { readJson, requireString } from "@/src/server/http";
 
@@ -13,12 +13,7 @@ export async function POST(req: Request) {
       token: credential,
     });
     if (error) throw new UnauthorizedError("Google sign-in failed");
-    const user = data.user;
-    const providers = (user.identities ?? []).map((i) => i.provider);
-    if (providers.includes("email")) {
-      throw new ConflictError("An account with this email already exists");
-    }
-    return NextResponse.json({ data: { session: data.session, user } });
+    return NextResponse.json({ data: { session: data.session, user: data.user } });
   } catch (e) {
     return errorResponse(e);
   }

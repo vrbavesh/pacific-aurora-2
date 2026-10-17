@@ -18,7 +18,7 @@
  *   `character_status` is the only true enum.
  * - A world holds at most 10 custom entity types.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.0
  */
 import * as zod from 'zod';
 
@@ -78,7 +78,7 @@ export const PostAuthSigninResponse = zod.object({
 
 
 /**
- * @summary Sign in or sign up with Google
+ * @summary Sign in or sign up with Google; Supabase may link a verified matching email identity
  */
 export const PostAuthGoogleBody = zod.object({
   "credential": zod.string().describe('Google ID token')
@@ -615,6 +615,473 @@ export const DeleteBooksBookIdChaptersChapterIdImportantPointsPointIdParams = zo
 })
 
 export const DeleteBooksBookIdChaptersChapterIdImportantPointsPointIdResponse = zod.void()
+
+
+/**
+ * Safe to call on open, reload, and after a stale request. If no checkpoint
+ * row exists, completedMilestone is derived from the saved chapter
+ * manuscript without writing state. The global per-user dispatch cooldown
+ * is returned separately. Cross-user and missing chapters are identical 404s.
+ * @summary Read the durable AI analysis checkpoint and cooldown
+ */
+export const GetBooksBookIdChaptersChapterIdAiSuggestionsEligibilityParams = zod.object({
+  "bookId": zod.string(),
+  "chapterId": zod.string()
+})
+
+export const getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseDataCompletedMilestoneMin = 0;
+
+export const getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseDataCheckpointVersionMin = 0;
+
+
+
+export const GetBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponse = zod.object({
+  "data": zod.object({
+  "completedMilestone": zod.int().min(getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseDataCompletedMilestoneMin).describe('Last successfully analyzed 500-word total-count milestone for this chapter.'),
+  "nextEligibleAt": zod.iso.datetime({"offset":true}).nullable().describe('End of the per-user five-minute provider-dispatch cooldown.'),
+  "checkpointVersion": zod.int().min(getBooksBookIdChaptersChapterIdAiSuggestionsEligibilityResponseDataCheckpointVersionMin).describe('Monotonic version used to detect stale chapter analysis requests.')
+})
+})
+
+
+/**
+ * The browser sends the current unsaved text window. The server reads
+ * canonical world data with the caller's RLS client,
+ * validates ownership, and sends the full bounded snapshot to its
+ * configured model. One provider dispatch per user per five minutes,
+ * including failed dispatches. Only a valid response advances the
+ * completed milestone. No world data is written by this operation.
+ * @summary Analyze a paused 500-word manuscript window for suggestions
+ */
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsParams = zod.object({
+  "bookId": zod.string(),
+  "chapterId": zod.string()
+})
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsBodyTextMax = 30000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsBodyWordCountMin = 500;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsBodyCheckpointVersionMin = 0;
+
+
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsBody = zod.object({
+  "text": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsBodyTextMax).describe('Latest 500-word plain-text window from the paused, possibly unsaved editor.'),
+  "wordCount": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsBodyWordCountMin),
+  "milestone": zod.int().min(1),
+  "checkpointVersion": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsBodyCheckpointVersionMin)
+})
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneChangesAgeMin = 0;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemTwoSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemTwoSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemThreeSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemThreeSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFourSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFourSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsMax = 8;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataCompletedMilestoneMin = 0;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataCheckpointVersionMin = 0;
+
+
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsResponse = zod.object({
+  "data": zod.object({
+  "suggestions": zod.array(zod.union([zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "age": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneChangesAgeMin).nullish(),
+  "health": zod.string().nullish(),
+  "distinctions": zod.string().nullish(),
+  "traits": zod.string().nullish(),
+  "mutations": zod.string().nullish(),
+  "status": zod.enum(['alive', 'dead']).optional(),
+  "notes": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemOneSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['place']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "lastChapterId": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemTwoSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemTwoSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['item']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "power": zod.string().nullish(),
+  "wielderEntityId": zod.string().nullish(),
+  "manualWielderName": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemThreeSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemThreeSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['custom_entity']),
+  "action": zod.enum(['create', 'update']),
+  "entityTypeId": zod.string(),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFourSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFourSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['chapter_point']),
+  "action": zod.enum(['add_point']),
+  "chapterId": zod.string(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemFiveSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character_timeline_point']),
+  "action": zod.enum(['add_point']),
+  "characterEntityId": zod.string(),
+  "chapterId": zod.string().nullable(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsItemSixSourceExcerptMax).nullable()
+})])).max(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataSuggestionsMax),
+  "completedMilestone": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataCompletedMilestoneMin),
+  "nextEligibleAt": zod.iso.datetime({"offset":true}).nullable(),
+  "checkpointVersion": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsResponseDataCheckpointVersionMin)
+})
+})
+
+
+/**
+ * The suggestion is data, not authority. Revalidate all target IDs,
+ * world/book membership, field allowlists, custom attribute schemas,
+ * and expected target version. A consumed suggestion ID and the write
+ * commit atomically. Reusing a suggestion ID in the same chapter and
+ * kind returns the original result without another write; reusing it
+ * for another chapter or kind returns 409.
+ * @summary Apply one explicitly accepted AI suggestion
+ */
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsApplyParams = zod.object({
+  "bookId": zod.string(),
+  "chapterId": zod.string()
+})
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneChangesAgeMin = 0;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionTwoSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionTwoSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionThreeSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionThreeSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFourSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFourSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixSourceExcerptMax = 320;
+
+
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsApplyBody = zod.object({
+  "suggestion": zod.union([zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "age": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneChangesAgeMin).nullish(),
+  "health": zod.string().nullish(),
+  "distinctions": zod.string().nullish(),
+  "traits": zod.string().nullish(),
+  "mutations": zod.string().nullish(),
+  "status": zod.enum(['alive', 'dead']).optional(),
+  "notes": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionOneSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['place']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "lastChapterId": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionTwoSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionTwoSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['item']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "power": zod.string().nullish(),
+  "wielderEntityId": zod.string().nullish(),
+  "manualWielderName": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionThreeSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionThreeSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['custom_entity']),
+  "action": zod.enum(['create', 'update']),
+  "entityTypeId": zod.string(),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFourSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFourSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['chapter_point']),
+  "action": zod.enum(['add_point']),
+  "chapterId": zod.string(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionFiveSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character_timeline_point']),
+  "action": zod.enum(['add_point']),
+  "characterEntityId": zod.string(),
+  "chapterId": zod.string().nullable(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsApplyBodySuggestionSixSourceExcerptMax).nullable()
+})])
+})
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsApplyResponse = zod.object({
+  "data": zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character', 'place', 'item', 'custom_entity', 'chapter_point', 'character_timeline_point']),
+  "resourceId": zod.string().describe('Opaque ID of the created or updated owned resource.')
+})
+})
+
+
+/**
+ * @summary Remember a declined AI suggestion for this chapter
+ */
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsDeclineParams = zod.object({
+  "bookId": zod.string(),
+  "chapterId": zod.string()
+})
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneChangesAgeMin = 0;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionTwoSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionTwoSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionThreeSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionThreeSourceExcerptMax = 320;
+
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFourSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFourSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveSourceExcerptMax = 320;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixChangesContentMax = 2000;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixSummaryMax = 240;
+
+export const postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixSourceExcerptMax = 320;
+
+
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsDeclineBody = zod.object({
+  "suggestion": zod.union([zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "age": zod.int().min(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneChangesAgeMin).nullish(),
+  "health": zod.string().nullish(),
+  "distinctions": zod.string().nullish(),
+  "traits": zod.string().nullish(),
+  "mutations": zod.string().nullish(),
+  "status": zod.enum(['alive', 'dead']).optional(),
+  "notes": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionOneSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['place']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "lastChapterId": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionTwoSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionTwoSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['item']),
+  "action": zod.enum(['create', 'update']),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "status": zod.string().nullish(),
+  "power": zod.string().nullish(),
+  "wielderEntityId": zod.string().nullish(),
+  "manualWielderName": zod.string().nullish()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionThreeSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionThreeSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['custom_entity']),
+  "action": zod.enum(['create', 'update']),
+  "entityTypeId": zod.string(),
+  "targetEntityId": zod.string().nullable(),
+  "expectedTargetUpdatedAt": zod.iso.datetime({"offset":true}).nullable(),
+  "changes": zod.object({
+  "name": zod.string().min(1).optional(),
+  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFourSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFourSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['chapter_point']),
+  "action": zod.enum(['add_point']),
+  "chapterId": zod.string(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionFiveSourceExcerptMax).nullable()
+}),zod.object({
+  "suggestionId": zod.uuid(),
+  "kind": zod.enum(['character_timeline_point']),
+  "action": zod.enum(['add_point']),
+  "characterEntityId": zod.string(),
+  "chapterId": zod.string().nullable(),
+  "changes": zod.object({
+  "content": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixChangesContentMax)
+}),
+  "summary": zod.string().min(1).max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixSummaryMax),
+  "sourceExcerpt": zod.string().max(postBooksBookIdChaptersChapterIdAiSuggestionsDeclineBodySuggestionSixSourceExcerptMax).nullable()
+})])
+})
+
+export const PostBooksBookIdChaptersChapterIdAiSuggestionsDeclineResponse = zod.object({
+  "data": zod.object({
+  "declined": zod.literal(true)
+})
+})
 
 
 /**
