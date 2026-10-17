@@ -13,7 +13,7 @@ without a full codebase onboarding. It has three parts:
 
 ## 1. Current state
 
-**Deployed product: V1.3, complete and live against Supabase.** V2 is being built only on
+**Deployed product: V1.3.1, complete and live against Supabase.** V2 is being built only on
 `codex/pacific-aurora-v2`; it has not been merged or deployed. The V2 PDF in `plans/` is the
 authority for V2 scope, and `plans/pacific-aurora-v2-blueprint.md` sets its eight-step order.
 Steps 1-8 are implemented on the V2 branch. Patch work has advanced the branch files to
@@ -23,7 +23,7 @@ the production build, and all 29 Chromium browser tests. A guarded local
 route-to-Groq-to-apply smoke passed against the live database.
 Explicit merge/deploy approval is pending. Migrations 0003-0007 were applied
 to both the isolated preview and the live Pacific Aurora database on 2026-10-17
-by owner direction; V1.3 code remains deployed. The owner accepted proceeding
+by owner direction; V1.3.1 code remains deployed. The owner accepted proceeding
 without a verified pre-migration backup. Do not reapply these migrations.
 
 ### Verified against the live project
@@ -169,11 +169,11 @@ without a verified pre-migration backup. Do not reapply these migrations.
   Confirm Email is enabled in both preview and deployed projects; Google is
   enabled on deployed V1 but disabled on preview, so linking was not exercised
   on preview. Migration `0004_auth_resend_limits.sql` is now also on the live
-  database, though V1.3 code remains deployed.
+  database, though V1.3.1 code remains deployed.
 
 ### Open items
 
-1. Explicit owner approval for merge/deployment; deployed V1.3 remains unchanged.
+1. Explicit owner approval for merge/deployment; deployed V1.3.1 remains unchanged.
 2. V2 migrations 0003-0007 are already on the live database. The owner waived
    the pre-migration backup gate; arrange a restorable backup as soon as possible.
    Never reverse migrations after V2 writes. The live migration ledger has
@@ -197,7 +197,7 @@ without a verified pre-migration backup. Do not reapply these migrations.
 
 | File | What it holds |
 |---|---|
-| `README.md` | Public-facing overview, setup, deployment. Records version 1.3 |
+| `README.md` | Public-facing overview, setup, deployment. Records branch version 2.1.4 |
 | `CLAUDE.md` | Project instructions, conventions, gates |
 | `plans/pacific-aurora-blueprint.md` | The 12-step build plan and the document's fixed readings |
 | `plans/pacific-aurora-api-design.md` | API design notes |
@@ -210,15 +210,10 @@ without a verified pre-migration backup. Do not reapply these migrations.
 
 ### Repository quirks worth knowing
 
-- `.gitignore:46` ignores `/plans`, so `plans/security-review-2026-10-10.md` and
-  `plans/deployment-checklist.md` are **not tracked** in git. The three older files stay
-  tracked only because they were committed before the ignore rule was added. The V2 PDF
-  and blueprint were force-added on the V2 branch; keep them staged/tracked. If you want
-  the two security/deployment docs backed up, un-ignore the directory or move them.
-- `package.json` still says `0.1.0` while the project is version 1.3. The README is the
-  source of truth for the deployed version. The approved V2 blueprint reserves the
-  `README.md`/`package.json` synchronized bump to 2.0.0 for Step 8, once V2 passes its
-  release gates; package dependencies changed in Step 2 without an early release bump.
+- `.gitignore` ignores ad hoc files in `/plans` while tracking the release and
+  security documents explicitly. Keep the V2 PDF and blueprint tracked.
+- `README.md`, `package.json`, and the lockfile all record V2 version 2.1.4.
+  Deployed V1.3.1 is a separate revision on `main` until rollout.
 
 ---
 
@@ -233,7 +228,7 @@ persistent world behind it: characters, places, items, relationships, and user-d
 custom entity types stay connected to the books written inside them.
 
 **V2 branch version: 2.1.4.** Recorded in `README.md` and `package.json`.
-V1.3 remains deployed until the V2 rollout is explicitly approved.
+V1.3.1 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
 
@@ -448,7 +443,7 @@ Client ID in `.env.local`.
 - `optionalString` returns `null` for an explicit `null` so nullable fields can be cleared;
   omission leaves them untouched. `optionalInt` rejects non-integers.
 - The OTP resend limit is durable through migration 0004, now applied to the
-  live database; V1.3 code remains deployed until V2 rollout.
+  live database; V1.3.1 code remains deployed until V2 rollout.
 - `src/lib/api/generated.ts` and `schemas.ts` are generated; regenerate instead of editing.
 
 ## Git
@@ -471,7 +466,7 @@ Most recent first. Use this to tell deliberate state from unfinished work.
   owner direction, applied 0003-0007 in order to live `Pacific Aurora` with no
   verified backup. Migration records, five RLS-protected tables, five triggers,
   expected RPCs and grants were checked. Existing 5 profiles, 7 chapters, and
-  8 entities remained. V1.3 application code still serves traffic; production
+  8 entities remained. V1.3.1 application code still serves traffic; production
   AI configuration and V2 rollout are not complete.
 - **Theme-aware landing logo (2026-10-17, branch only).** Patch 2.1.3
   carries the V1 dark logo into V2 and adds a light-surface variant in the

@@ -35,7 +35,7 @@ Last reviewed: 2026-10-17.
       build, and 29 Chromium browser tests pass.
 - [x] Apply V2 migrations 0003-0007 to the live project in order. Completed
       2026-10-17 with owner-accepted no-backup risk; schema, RLS, RPCs, grants,
-      triggers, and migration records were verified. V1.3 code remains live.
+      triggers, and migration records were verified. V1.3.1 code remains live.
 - [ ] Confirm signup email delivery after switching V2 to the deployed main
       Supabase project. The isolated preview mail issue is not a launch gate
       by owner decision.
@@ -53,7 +53,7 @@ Last reviewed: 2026-10-17.
    `NEXT_PUBLIC_*` values are inlined, then deploy the exact verified V2 revision.
 4. With a disposable production account, smoke sign-in, onboarding, writing,
    AI eligibility/analysis/apply, world edits, chapter reorder, and deletion.
-5. If rollout fails before any V2 use, keep serving V1.3 and leave additive V2
+5. If rollout fails before any V2 use, keep serving V1.3.1 and leave additive V2
    tables/functions unused. After V2 traffic, do not reverse migrations or
    discard checkpoints/receipts; use a forward repair migration and preserve data.
 

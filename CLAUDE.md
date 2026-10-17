@@ -7,7 +7,7 @@ persistent world behind it: characters, places, items, relationships, and user-d
 custom entity types stay connected to the books written inside them.
 
 **V2 branch version: 2.1.4.** Recorded in `README.md` and `package.json`.
-V1.3 remains deployed until the V2 rollout is explicitly approved.
+V1.3.1 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
 
@@ -222,7 +222,7 @@ Client ID in `.env.local`.
 - `optionalString` returns `null` for an explicit `null` so nullable fields can be cleared;
   omission leaves them untouched. `optionalInt` rejects non-integers.
 - The OTP resend limit is durable through migration 0004, now applied to the
-  live database; V1.3 code remains deployed until V2 rollout.
+  live database; V1.3.1 code remains deployed until V2 rollout.
 - `src/lib/api/generated.ts` and `schemas.ts` are generated; regenerate instead of editing.
 
 ## Git

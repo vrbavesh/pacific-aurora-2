@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 2.1.4 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
+**Version 2.1.4 on `codex/pacific-aurora-v2`.** V1.3.1 remains deployed until the
 V2 migration and release are explicitly approved.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
@@ -320,7 +320,7 @@ V2 adds three private AI state tables and a private resend-limit table.
 
 ## Deployment
 
-1. Keep V1.3 deployed until the V2 branch passes its release gate and you approve rollout.
+1. Keep V1.3.1 deployed until the V2 branch passes its release gate and you approve rollout.
 2. V2 migrations 0003 through 0007 were applied to the deployed database on
    2026-10-17. The owner accepted proceeding without a verified backup; arrange
    one now. Do not reapply the migrations or reverse them after V2 traffic.

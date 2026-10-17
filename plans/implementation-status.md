@@ -19,7 +19,7 @@ V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 - By owner direction, migrations 0003-0007 were applied in order to the live
   `Pacific Aurora` database on 2026-10-17 without a verified backup. Migration
   records, five RLS-protected tables, five triggers, RPCs and grants were
-  verified; existing profile/chapter/entity counts stayed 5/7/8. V1.3 code
+  verified; existing profile/chapter/entity counts stayed 5/7/8. V1.3.1 code
   remains deployed. Arrange a backup and do not reapply the migrations.
 - Patch 2.1.3 brings the V1 dark logo and a light-theme variant to the V2
   landing header. Book import/export and additional relationship graph handles
