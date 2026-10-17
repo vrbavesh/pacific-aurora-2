@@ -8,6 +8,24 @@ V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 
 ## Current V2 branch status
 
+- Patch 2.1.4 retires preview-only AI test credentials. Guarded AI state,
+  apply, and provider end-to-end suites use the app's main-project URL and
+  matching keys only when explicitly enabled with a separate live confirmation.
+  `.env.example` was removed from branch history after real credentials appeared
+  in its local working copy; those keys should be rotated. The guarded
+  route-to-Groq-to-apply suite passed against the live database with a
+  disposable account. Lint, typecheck, 84 default tests, production build,
+  and 29 Chromium browser tests pass.
+- By owner direction, migrations 0003-0007 were applied in order to the live
+  `Pacific Aurora` database on 2026-10-17 without a verified backup. Migration
+  records, five RLS-protected tables, five triggers, RPCs and grants were
+  verified; existing profile/chapter/entity counts stayed 5/7/8. V1.3 code
+  remains deployed. Arrange a backup and do not reapply the migrations.
+- Patch 2.1.3 brings the V1 dark logo and a light-theme variant to the V2
+  landing header. Book import/export and additional relationship graph handles
+  are approved as post-launch patches. Lint, typecheck, 83 default tests,
+  focused Chromium theme coverage, and isolated build pass. Production Groq
+  and application rollout checks remain open.
 - Patch 2.1.2 adds password visibility controls to sign-in and sign-up only.
   Lint, typecheck, 83 default tests, focused Chromium 2/2, and isolated build
   pass. No auth API, preview database, or deployed V1 change.
@@ -100,7 +118,8 @@ V2 implementation order: `plans/pacific-aurora-v2-blueprint.md`.
 ## V2 release steps remaining
 
 1. Obtain explicit owner approval to merge and deploy the verified V2 revision.
-2. Back up deployed V1 data; apply 0003 through 0007 in order.
+2. Arrange a restorable backup; 0003 through 0007 are already applied to the
+   live database and must not be reapplied.
 3. Configure the production AI provider and run its smoke path.
 4. Deploy and smoke auth, Writer, AI apply, world data, and deletion with a
    disposable account; then tag the deployed revision.

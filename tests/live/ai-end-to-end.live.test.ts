@@ -5,10 +5,11 @@ import { GET as eligibility } from "@/app/api/books/[bookId]/chapters/[chapterId
 import { POST as analyze } from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/route";
 import { POST as apply } from "@/app/api/books/[bookId]/chapters/[chapterId]/ai-suggestions/apply/route";
 import type { AiAnalysisResult, AiApplyResult, AiEligibility } from "@/src/lib/api/generated";
+import { liveAiEnvironment } from "@/tests/helpers/live-ai-environment";
 
-const previewDescribe = process.env.RUN_PREVIEW_AI_E2E === "1" ? describe : describe.skip;
+const liveDescribe = process.env.RUN_LIVE_AI_E2E === "1" ? describe : describe.skip;
 
-previewDescribe("route-to-provider-to-apply on isolated V2 preview", () => {
+liveDescribe("route-to-provider-to-apply on the live database", () => {
   let admin: SupabaseClient;
   let userId = "";
   let token = "";
@@ -16,21 +17,17 @@ previewDescribe("route-to-provider-to-apply on isolated V2 preview", () => {
   let chapterId = "";
 
   beforeAll(async () => {
-    const previewUrl = process.env.PA_AI_PREVIEW_URL;
-    if (process.env.PA_AI_PREVIEW_CONFIRM !== "ISOLATED_V2_PREVIEW" || !previewUrl ||
-        !process.env.PA_AI_DEPLOYED_URL ||
-        new URL(previewUrl).origin === new URL(process.env.PA_AI_DEPLOYED_URL).origin ||
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== previewUrl || !process.env.PA_AI_PREVIEW_SECRET_KEY ||
-        !process.env.PA_AI_PREVIEW_PUBLISHABLE_KEY || process.env.AI_BASE_URL !== "http://localhost:11434/v1") {
-      throw new Error("Isolated V2 preview and local Ollama configuration required");
+    const { url, anonKey, serviceKey } = liveAiEnvironment();
+    if (!process.env.AI_BASE_URL || !process.env.AI_MODEL || !process.env.AI_API_KEY) {
+      throw new Error("Configured AI provider is required for the live AI end-to-end suite");
     }
-    admin = createClient(previewUrl, process.env.PA_AI_PREVIEW_SECRET_KEY, { auth: { persistSession: false } });
+    admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const email = `pa-ai-e2e-${randomUUID()}@example.com`;
     const password = `Pa!${randomUUID()}9z`;
     const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
     if (created.error || !created.data.user) throw created.error ?? new Error("No test user");
     userId = created.data.user.id;
-    const client = createClient(previewUrl, process.env.PA_AI_PREVIEW_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+    const client = createClient(url, anonKey, { auth: { persistSession: false } });
     const login = await client.auth.signInWithPassword({ email, password });
     if (login.error || !login.data.session) throw login.error ?? new Error("No test session");
     token = login.data.session.access_token;
@@ -50,7 +47,7 @@ previewDescribe("route-to-provider-to-apply on isolated V2 preview", () => {
 
   test("analysis checkpoints without saving prose; accepting one card writes once", async () => {
     const params = { params: Promise.resolve({ bookId, chapterId }) };
-    const request = (path: string, body?: unknown) => new Request(`http://preview.test${path}`, {
+    const request = (path: string, body?: unknown) => new Request(`http://local.test${path}`, {
       method: body ? "POST" : "GET",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       ...(body ? { body: JSON.stringify(body) } : {}),

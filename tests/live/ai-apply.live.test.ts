@@ -1,17 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { liveAiEnvironment } from "@/tests/helpers/live-ai-environment";
 
-// Apply migration 0005 only to the isolated V2 preview project before enabling.
-const previewDescribe = process.env.RUN_PREVIEW_AI_APPLY === "1" ? describe : describe.skip;
+const liveDescribe = process.env.RUN_LIVE_AI_APPLY === "1" ? describe : describe.skip;
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required for the isolated V2 apply test`);
-  return value;
-}
-
-previewDescribe("V2 accepted suggestions on an isolated preview database", () => {
+liveDescribe("V2 accepted suggestions on the live database", () => {
   let admin: SupabaseClient;
   let owner: SupabaseClient;
   let stranger: SupabaseClient;
@@ -21,15 +15,8 @@ previewDescribe("V2 accepted suggestions on an isolated preview database", () =>
   let worldId = "";
 
   beforeAll(async () => {
-    if (process.env.PA_AI_PREVIEW_CONFIRM !== "ISOLATED_V2_PREVIEW") {
-      throw new Error("Set PA_AI_PREVIEW_CONFIRM=ISOLATED_V2_PREVIEW for this data-creating suite");
-    }
-    const url = required("PA_AI_PREVIEW_URL");
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && new URL(url).origin === new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin) {
-      throw new Error("Preview URL matches the deployed project; refusing destructive test data");
-    }
-    admin = createClient(url, required("PA_AI_PREVIEW_SECRET_KEY"), { auth: { persistSession: false } });
-    const anonKey = required("PA_AI_PREVIEW_PUBLISHABLE_KEY");
+    const { url, anonKey, serviceKey } = liveAiEnvironment();
+    admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const createUser = async (label: string) => {
       const email = `pa-apply-${label}-${randomUUID()}@example.com`;
       const password = `Pa!${randomUUID()}9z`;
@@ -44,10 +31,10 @@ previewDescribe("V2 accepted suggestions on an isolated preview database", () =>
     const first = await createUser("owner");
     owner = first.client;
     stranger = (await createUser("stranger")).client;
-    const world = await owner.from("worlds").insert({ owner_id: first.id, name: "Apply Preview" }).select("id").single();
+    const world = await owner.from("worlds").insert({ owner_id: first.id, name: "Apply Live Test" }).select("id").single();
     if (world.error) throw world.error;
     worldId = world.data.id;
-    const book = await owner.from("books").insert({ world_id: worldId, name: "Apply Preview Book" }).select("id").single();
+    const book = await owner.from("books").insert({ world_id: worldId, name: "Apply Live Test Book" }).select("id").single();
     if (book.error) throw book.error;
     bookId = book.data.id;
     const chapter = await owner.from("chapters").select("id").eq("book_id", bookId).single();

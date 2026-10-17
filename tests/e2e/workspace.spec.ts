@@ -194,9 +194,15 @@ test("settings persists light and dark themes across routes and restores focus",
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(243, 248, 247)");
   }
 
+  const logo = page.getByRole("link", { name: "Pacific Aurora home" });
+  await expect(logo.locator('img[src="/pacific-aurora-logo-light.svg"]')).toBeVisible();
+  await expect(logo.locator('img[src="/pacific-aurora-logo.svg"]')).toBeHidden();
+
   const landingThemeToggle = page.getByRole("button", { name: "Switch to dark theme" });
   await landingThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(logo.locator('img[src="/pacific-aurora-logo.svg"]')).toBeVisible();
+  await expect(logo.locator('img[src="/pacific-aurora-logo-light.svg"]')).toBeHidden();
   expect(await page.evaluate(() => localStorage.getItem("pacific_aurora_theme"))).toBe("dark");
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

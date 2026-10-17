@@ -6,7 +6,7 @@ Pacific Aurora is a full-stack authoring and worldbuilding workspace. Fiction ge
 persistent world behind it: characters, places, items, relationships, and user-defined
 custom entity types stay connected to the books written inside them.
 
-**V2 branch version: 2.1.2.** Recorded in `README.md` and `package.json`.
+**V2 branch version: 2.1.4.** Recorded in `README.md` and `package.json`.
 V1.3 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
@@ -180,7 +180,7 @@ under RLS. Cards are session-only; chapter-scoped declines persist across device
 
 ## Environment and security
 
-Copy `.env.example` to `.env.local`. Base and V2 provider variables:
+Create a gitignored `.env.local`. Base and V2 provider variables:
 
 | Variable | Scope | Notes |
 |---|---|---|
@@ -221,7 +221,8 @@ Client ID in `.env.local`.
   fetch visible rows and narrow by `world_id` in the client. Ownership is still RLS.
 - `optionalString` returns `null` for an explicit `null` so nullable fields can be cleared;
   omission leaves them untouched. `optionalInt` rejects non-integers.
-- The OTP resend limit is durable through migration 0004; preview-only until V2 rollout.
+- The OTP resend limit is durable through migration 0004, now applied to the
+  live database; V1.3 code remains deployed until V2 rollout.
 - `src/lib/api/generated.ts` and `schemas.ts` are generated; regenerate instead of editing.
 
 ## Git

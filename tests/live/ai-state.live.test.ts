@@ -1,19 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { liveAiEnvironment } from "@/tests/helpers/live-ai-environment";
 
-// Run only against a V2 preview Supabase project with migration 0003 applied.
-// Intentionally does not read .env.local or use the deployed project's keys.
-const RUN_PREVIEW = process.env.RUN_PREVIEW_AI_STATE === "1";
-const previewDescribe = RUN_PREVIEW ? describe : describe.skip;
+const liveDescribe = process.env.RUN_LIVE_AI_STATE === "1" ? describe : describe.skip;
 
-function previewVariable(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required for the V2 preview test`);
-  return value;
-}
-
-previewDescribe("V2 AI state on an isolated preview database", () => {
+liveDescribe("V2 AI state on the live database", () => {
   let admin: SupabaseClient;
   let owner: SupabaseClient;
   let stranger: SupabaseClient;
@@ -26,16 +18,7 @@ previewDescribe("V2 AI state on an isolated preview database", () => {
   let worldId = "";
 
   beforeAll(async () => {
-    if (process.env.PA_AI_PREVIEW_CONFIRM !== "ISOLATED_V2_PREVIEW") {
-      throw new Error("Set PA_AI_PREVIEW_CONFIRM=ISOLATED_V2_PREVIEW for this data-creating suite");
-    }
-    const url = previewVariable("PA_AI_PREVIEW_URL");
-    const deployedUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (deployedUrl && new URL(url).origin === new URL(deployedUrl).origin) {
-      throw new Error("Preview URL matches the deployed project; refusing destructive test data");
-    }
-    const anonKey = previewVariable("PA_AI_PREVIEW_PUBLISHABLE_KEY");
-    const serviceKey = previewVariable("PA_AI_PREVIEW_SECRET_KEY");
+    const { url, anonKey, serviceKey } = liveAiEnvironment();
     admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const runId = randomUUID();
     const createUser = async (label: string) => {
@@ -54,10 +37,10 @@ previewDescribe("V2 AI state on an isolated preview database", () => {
     ownerId = first.id;
     stranger = (await createUser("stranger")).client;
 
-    const world = await owner.from("worlds").insert({ owner_id: ownerId, name: "AI Preview" }).select("id").single();
+    const world = await owner.from("worlds").insert({ owner_id: ownerId, name: "AI Live Test" }).select("id").single();
     if (world.error) throw world.error;
     worldId = world.data.id;
-    const book = await owner.from("books").insert({ world_id: worldId, name: "AI Preview Book" }).select("id").single();
+    const book = await owner.from("books").insert({ world_id: worldId, name: "AI Live Test Book" }).select("id").single();
     if (book.error) throw book.error;
     bookId = book.data.id;
     const intro = await owner.from("chapters").select("id").eq("book_id", bookId).single();
@@ -69,7 +52,7 @@ previewDescribe("V2 AI state on an isolated preview database", () => {
     // Simulate a manuscript saved before AI checkpoints existed.
     const legacy = await admin.from("ai_chapter_checkpoints").delete().eq("chapter_id", chapterId);
     if (legacy.error) throw legacy.error;
-    const otherBook = await owner.from("books").insert({ world_id: worldId, name: "Other AI Book" }).select("id").single();
+    const otherBook = await owner.from("books").insert({ world_id: worldId, name: "Other AI Live Test Book" }).select("id").single();
     if (otherBook.error) throw otherBook.error;
     otherBookId = otherBook.data.id;
     const otherIntro = await owner.from("chapters").select("id").eq("book_id", otherBookId).single();

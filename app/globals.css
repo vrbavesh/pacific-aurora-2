@@ -11,6 +11,8 @@
 .aurora-static { background: radial-gradient(ellipse at top, rgb(45 212 191 / .18), transparent 60%), radial-gradient(ellipse at bottom, rgb(34 211 238 / .12), transparent 60%), #050d14; }
 :root[data-theme="light"] .aurora-backdrop { background: radial-gradient(ellipse at 30% 0%, rgb(36 160 146 / .12), transparent 55%), radial-gradient(ellipse at 90% 75%, rgb(53 137 160 / .07), transparent 50%), var(--background); }
 :root[data-theme="light"] .aurora-backdrop canvas, :root[data-theme="light"] .aurora-backdrop > div { display: none; }
+.landing-logo-light, :root[data-theme="light"] .landing-logo-dark { display: none; }
+:root[data-theme="light"] .landing-logo-light { display: block; }
 .workspace { min-height: 100dvh; background: var(--background); color: var(--foreground); }
 .ws-header { display: flex; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--background-elevated); }
 .ws-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .55rem .8rem; border: 1px solid var(--border-strong); border-radius: .375rem; color: var(--foreground); background: var(--background-elevated); font-size: .8125rem; line-height: 1.4; cursor: pointer; white-space: nowrap; }

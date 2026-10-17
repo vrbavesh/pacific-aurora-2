@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 2.1.2 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
+**Version 2.1.4 on `codex/pacific-aurora-v2`.** V1.3 remains deployed until the
 V2 migration and release are explicitly approved.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
@@ -103,8 +103,10 @@ npm install && npm run dev
 
 ```bash
 npm install
-cp .env.example .env.local      # then fill in the values below
 ```
+
+Create a local `.env.local` with the variables below. Environment files are
+gitignored; do not commit credentials.
 
 | Variable | Where | Purpose |
 |---|---|---|
@@ -120,9 +122,9 @@ cp .env.example .env.local      # then fill in the values below
 
 Run migrations in order: `0001_pacific_aurora.sql`, `0002_atomic_writes.sql`,
 `0003_ai_analysis_state.sql`, `0004_auth_resend_limits.sql`, and
-`0005_ai_apply_once.sql`, `0006_ai_new_chapter_checkpoint.sql`, and `0007_ai_sliding_review.sql`. The V2 migrations are applied only to the isolated
-preview project so far. Do not run them on the deployed V1 project until the
-V2 rollout is approved; apply 0003 through 0007 in order there before deploying V2 code.
+`0005_ai_apply_once.sql`, `0006_ai_new_chapter_checkpoint.sql`, and
+`0007_ai_sliding_review.sql`. Migrations 0003 through 0007 have been applied
+to the live Pacific Aurora project, but V2 code has not been deployed.
 
 ### Generate the API artifacts and run
 
@@ -167,10 +169,13 @@ RUN_LIVE_ACCOUNT_DELETE=1 npm test       # cascade removal of an account and eve
 
 They read credentials from `.env.local`.
 
-V2 also has opt-in preview AI state, apply, route-to-provider, and local Ollama smoke
-suites. Use only an isolated V2 project with `PA_AI_PREVIEW_*` credentials; never
-point those suites at the deployed V1 project. See the guarded test files under
-`tests/live/` and the [V2 deployment checklist](plans/deployment-checklist.md).
+V2 AI state, apply, and route-to-provider suites now use the same Supabase URL
+and keys as the app. They create and delete disposable users, so they remain
+skipped unless their respective `RUN_LIVE_AI_STATE`, `RUN_LIVE_AI_APPLY`, or
+`RUN_LIVE_AI_E2E` flag is `1` **and** `PA_AI_LIVE_CONFIRM` is set to
+`MAIN_PROJECT_DISPOSABLE_USERS` in the shell. Do not put that confirmation in
+`.env.local`. The local Ollama smoke suite remains separate. See `tests/live/`
+and the [V2 deployment checklist](plans/deployment-checklist.md).
 
 ---
 
@@ -316,9 +321,10 @@ V2 adds three private AI state tables and a private resend-limit table.
 ## Deployment
 
 1. Keep V1.3 deployed until the V2 branch passes its release gate and you approve rollout.
-2. Apply V2 migrations 0003 through 0007 to the deployed project after backing up
-   and confirming the V1 schema and 0002 are present. The migrations are additive; do not
-   try to reverse them after accepting V2 traffic. Use a forward repair migration instead.
+2. V2 migrations 0003 through 0007 were applied to the deployed database on
+   2026-10-17. The owner accepted proceeding without a verified backup; arrange
+   one now. Do not reapply the migrations or reverse them after V2 traffic.
+   Use a forward repair migration instead.
 3. Set the existing Supabase and Google variables plus `AI_BASE_URL`, `AI_MODEL`, and
    `AI_API_KEY` for Groq at production scope. Never expose the AI key to the browser.
 4. In Supabase: set Site URL to the production origin, configure custom SMTP so OTP mail

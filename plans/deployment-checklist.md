@@ -4,6 +4,8 @@ Last reviewed: 2026-10-17.
 
 ## V2 release gate — branch only, not deployed
 
+- [x] Owner defers book import/export and additional relationship graph
+      connection handles until post-launch patches.
 - [x] V2 steps 1–7 implemented on `codex/pacific-aurora-v2`; `README.md`,
       `package.json`, and lockfile aligned to 2.0.0 on this branch.
 - [x] Contract regenerated with no drift; lint, typecheck, 73 default tests,
@@ -27,16 +29,26 @@ Last reviewed: 2026-10-17.
       projects; deployed Google enabled. Preview Google is disabled, so Google
       linking itself has not been exercised there.
 - [ ] Production AI provider (Groq) smoke test and deployment configuration.
-      Only local Ollama was authorized/tested this pass.
+      Local route-to-Groq-to-apply passed against the live database with a
+      disposable user; production-host configuration remains unverified.
+- [x] Release branch gates: lint, typecheck, 84 default tests, production
+      build, and 29 Chromium browser tests pass.
+- [x] Apply V2 migrations 0003-0007 to the live project in order. Completed
+      2026-10-17 with owner-accepted no-backup risk; schema, RLS, RPCs, grants,
+      triggers, and migration records were verified. V1.3 code remains live.
+- [ ] Confirm signup email delivery after switching V2 to the deployed main
+      Supabase project. The isolated preview mail issue is not a launch gate
+      by owner decision.
 - [ ] Explicit owner approval to merge/deploy the V2 branch.
 
 ### Production migration order and rollback
 
-1. Back up the deployed V1 database and confirm 0001 and 0002 are applied.
-2. Apply `0003_ai_analysis_state.sql`, `0004_auth_resend_limits.sql`,
-   `0005_ai_apply_once.sql`, `0006_ai_new_chapter_checkpoint.sql`, then
-   `0007_ai_sliding_review.sql` to the deployed project. Verify
-   functions, RLS, and policies/grants before routing V2 traffic.
+1. The owner waived the pre-migration backup. Arrange a restorable backup now;
+   no verified recovery point exists for the migration window.
+2. `0003_ai_analysis_state.sql` through `0007_ai_sliding_review.sql` are already
+   applied to the live project. Do not reapply. The migration ledger records
+   0003-0007 only; 0001/0002 were applied previously outside that ledger, so
+   reconcile history before any future `supabase db push`.
 3. Configure server-only `AI_BASE_URL`, `AI_MODEL`, and `AI_API_KEY`, rebuild so
    `NEXT_PUBLIC_*` values are inlined, then deploy the exact verified V2 revision.
 4. With a disposable production account, smoke sign-in, onboarding, writing,
@@ -45,16 +57,17 @@ Last reviewed: 2026-10-17.
    tables/functions unused. After V2 traffic, do not reverse migrations or
    discard checkpoints/receipts; use a forward repair migration and preserve data.
 
-### Preview database note
+### AI integration suite note
 
-Migrations 0003–0007 are already applied only to `pa-newbranchtest`. Guarded
-tests require `PA_AI_PREVIEW_CONFIRM=ISOLATED_V2_PREVIEW` and the preview-only
-credentials in `.env.local`; the end-to-end suite also requires
-`PA_AI_DEPLOYED_URL` and rejects matching preview/deployed origins. Never deploy
-those test credentials. The V2 tables
-have RLS enabled and no direct client policies by design; Supabase's advisory
-reports this as informational. Existing V1 trigger functions also have mutable
-search-path advisories; review separately before rollout.
+Migrations 0003–0007 are applied to the live project. The AI state, apply,
+and route-to-provider suites use `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` only with
+their respective `RUN_LIVE_AI_*` flag and a shell-only
+`PA_AI_LIVE_CONFIRM=MAIN_PROJECT_DISPOSABLE_USERS`. They create and delete
+disposable auth users; never enable them during an ordinary test run. The V2
+tables have RLS enabled and no direct client policies by design; Supabase's
+advisory reports this as informational. Existing V1 trigger functions also
+have mutable search-path advisories; review separately before rollout.
 
 ---
 

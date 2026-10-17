@@ -17,19 +17,22 @@ without a full codebase onboarding. It has three parts:
 `codex/pacific-aurora-v2`; it has not been merged or deployed. The V2 PDF in `plans/` is the
 authority for V2 scope, and `plans/pacific-aurora-v2-blueprint.md` sets its eight-step order.
 Steps 1-8 are implemented on the V2 branch. Patch work has advanced the branch files to
-version 2.1.2. Patch 2.0.3 explicitly defaults the landing page to Times New Roman.
-Writer and AI regressions pass, along with lint,
-typecheck, 83 default tests, and the production build. The 27-case browser run
-passed 26; an unrelated sign-in consent case passed on isolated rerun.
-Explicit merge/deploy approval is pending. Migrations 0003-0007 are
-applied only to the isolated preview project.
-Do not apply V2 migrations to the live
-database or change the deployed V1 project during branch work. Before a V2
-production rollout, apply the V2 migration to the deployed project in order.
+version 2.1.4. Patch 2.0.3 explicitly defaults the landing page to Times New Roman.
+Writer and AI regressions pass, along with lint, typecheck, 84 default tests,
+the production build, and all 29 Chromium browser tests. A guarded local
+route-to-Groq-to-apply smoke passed against the live database.
+Explicit merge/deploy approval is pending. Migrations 0003-0007 were applied
+to both the isolated preview and the live Pacific Aurora database on 2026-10-17
+by owner direction; V1.3 code remains deployed. The owner accepted proceeding
+without a verified pre-migration backup. Do not reapply these migrations.
 
 ### Verified against the live project
 
 - All 15 tables present with real records; both migrations applied
+- V2 migrations 0003-0007 now applied on the live project. Five new tables
+  have RLS enabled with no direct client access; expected RPCs/triggers and
+  migration records were verified. Existing profile/chapter/entity counts
+  remained 5/7/8. V2 application code is not deployed.
 - Email/password sign-up, sign-in, OTP recovery, onboarding, and normal CRUD verified live
 - Google sign-in **enabled** (`/auth/v1/settings` reports `"google": true`) and needs no
   code change; only the Client ID env var on the host
@@ -38,8 +41,20 @@ production rollout, apply the V2 migration to the deployed project in order.
   11 skipped (the skipped ones are the `RUN_LIVE_*` suites), `build` passing with
   `/home`, `/books/[bookId]`, `/worlds/[worldId]` and all 38 route groups
 
-### V2 branch progress (local and isolated preview only)
+### V2 branch progress
 
+- Patch 2.1.4 retires preview-project test credentials. The three opt-in AI
+  integration suites use the app's main-project URL and matching keys, but
+  still require separate `RUN_LIVE_AI_*` flags and shell-only
+  `PA_AI_LIVE_CONFIRM=MAIN_PROJECT_DISPOSABLE_USERS` before creating disposable
+  users. `.env.example` is no longer tracked. The guarded end-to-end suite
+  passed against the main database and Groq during release checks.
+- Patch 2.1.3 ports the V1 dark landing-header logo and adds its light-theme
+  variant. The prepaint theme determines which SVG is visible. Lint, typecheck,
+  83 default tests, focused Chromium theme coverage, and isolated build pass.
+  Book import, book export, and additional relationship-handle orientations are deferred
+  until after V2 launch by owner decision. Production Groq and application
+  rollout checks remain separate gates.
 - Patch 2.1.2 adds a keyboard-accessible show/hide password button to both
   `/signin` and `/signup`. The button preserves the entered value and never
   submits the form. Lint, typecheck, 83 default tests, focused Chromium 2/2,
@@ -133,16 +148,15 @@ production rollout, apply the V2 migration to the deployed project in order.
   boundary also rejects same-kind duplicate names when the model ignores the
   prompt. No preview or V1 data was changed.
 - Supabase confirmation-mail investigation made no database, dashboard, or code changes.
-  The local `.env.local` targets the isolated V2 preview project, not deployed V1. Delivery
+  At the time, `.env.local` targeted the isolated V2 preview project, not deployed V1. Delivery
   remains an environment/provider issue to verify in that preview project's Auth logs and
   SMTP/provider settings; no conclusive provider-side cause was established in this pass.
 - Local Step 4 gates: 51 Vitest tests passed; 14 live/preview tests skipped without their
   opt-in flags. Typecheck and lint pass (3 warnings in unrelated untracked workbook
   scripts). No app route or bundle change was made in Step 4.
-- The preview suite uses `RUN_PREVIEW_AI_STATE=1`,
-  `PA_AI_PREVIEW_CONFIRM=ISOLATED_V2_PREVIEW`, `PA_AI_PREVIEW_URL`,
-  `PA_AI_PREVIEW_PUBLISHABLE_KEY`, and `PA_AI_PREVIEW_SECRET_KEY`. Never use the deployed
-  V1 URL or paste the secret key into chat.
+- Historical preview AI suites were retired in patch 2.1.4. Current live AI
+  suites require explicit flags and a shell-only confirmation; never paste a
+  service-role key into chat.
 - Local gates after Step 3: 42 Vitest tests passed, 11 live-only tests skipped;
   typecheck, lint, isolated production build, and Chromium browser tests passed.
   Browser coverage includes persistence, focus/Escape, mobile, reduced motion, and
@@ -154,15 +168,19 @@ production rollout, apply the V2 migration to the deployed project in order.
 - V2 security hardening accepts verified-email Google linking by owner approval.
   Confirm Email is enabled in both preview and deployed projects; Google is
   enabled on deployed V1 but disabled on preview, so linking was not exercised
-  on preview. Migration `0004_auth_resend_limits.sql` remains preview-only.
+  on preview. Migration `0004_auth_resend_limits.sql` is now also on the live
+  database, though V1.3 code remains deployed.
 
 ### Open items
 
 1. Explicit owner approval for merge/deployment; deployed V1.3 remains unchanged.
-2. Back up deployed V1 data, then apply V2 migrations 0003 through 0007 in order
-   before V2 traffic. Never reverse migrations after V2 writes.
-3. Configure and smoke the production AI provider; only local Ollama was tested
-   this pass. A cold local model can exceed the 60-second timeout.
+2. V2 migrations 0003-0007 are already on the live database. The owner waived
+   the pre-migration backup gate; arrange a restorable backup as soon as possible.
+   Never reverse migrations after V2 writes. The live migration ledger has
+   only 0003-0007 because 0001/0002 were applied outside that ledger; do not
+   run `supabase db push` blindly.
+3. The local route-to-Groq-to-apply smoke passed against the main database.
+   Confirm Groq variables on the production host and smoke the deployed app.
 4. Recheck the five dev-tool advisories before merge and review existing V1
    Supabase function lints noted in `plans/deployment-checklist.md`.
 5. Keep section recency by `updated_at` and chapter reorder via
@@ -171,8 +189,9 @@ production rollout, apply the V2 migration to the deployed project in order.
 6. Landing page middle hero has no "Sign in" button — **accepted deviation**, the landing
    UI stays as built.
 7. Confirm the browser runner exits cleanly on the release host before deployment.
-8. Diagnose confirmation-mail delivery against the isolated preview Supabase project.
-   Check Auth logs and SMTP/provider configuration without changing deployed V1.
+8. Preview confirmation-mail delivery remains unresolved, but the owner does
+   not make it a V2 launch gate because production will use the already
+   configured main Supabase project. Verify signup after production cutover.
 
 ### Document map
 
@@ -213,7 +232,7 @@ Pacific Aurora is a full-stack authoring and worldbuilding workspace. Fiction ge
 persistent world behind it: characters, places, items, relationships, and user-defined
 custom entity types stay connected to the books written inside them.
 
-**V2 branch version: 2.1.2.** Recorded in `README.md` and `package.json`.
+**V2 branch version: 2.1.4.** Recorded in `README.md` and `package.json`.
 V1.3 remains deployed until the V2 rollout is explicitly approved.
 
 ## Versioning
@@ -387,7 +406,7 @@ under RLS. Cards are session-only; chapter-scoped declines persist across device
 
 ## Environment and security
 
-Copy `.env.example` to `.env.local`. Base and V2 provider variables:
+Create a gitignored `.env.local`. Base and V2 provider variables:
 
 | Variable | Scope | Notes |
 |---|---|---|
@@ -428,7 +447,8 @@ Client ID in `.env.local`.
   fetch visible rows and narrow by `world_id` in the client. Ownership is still RLS.
 - `optionalString` returns `null` for an explicit `null` so nullable fields can be cleared;
   omission leaves them untouched. `optionalInt` rejects non-integers.
-- The OTP resend limit is durable through migration 0004; preview-only until V2 rollout.
+- The OTP resend limit is durable through migration 0004, now applied to the
+  live database; V1.3 code remains deployed until V2 rollout.
 - `src/lib/api/generated.ts` and `schemas.ts` are generated; regenerate instead of editing.
 
 ## Git
@@ -441,6 +461,24 @@ Short, descriptive, implementation-oriented commit subjects. Keep secrets out of
 
 Most recent first. Use this to tell deliberate state from unfinished work.
 
+- **Preview test retirement (2026-10-17, branch only).** Patch 2.1.4 replaces
+  preview-specific credentials in opt-in AI suites with the app's Supabase
+  credentials and an explicit live-test confirmation. Real keys were removed
+  from the local `.env.example`, which was removed from branch history; rotate
+  any key previously placed there. The guarded route-to-Groq-to-apply suite
+  later passed against the live database using a disposable account.
+- **Live V2 database migration (2026-10-17, production database only).** By
+  owner direction, applied 0003-0007 in order to live `Pacific Aurora` with no
+  verified backup. Migration records, five RLS-protected tables, five triggers,
+  expected RPCs and grants were checked. Existing 5 profiles, 7 chapters, and
+  8 entities remained. V1.3 application code still serves traffic; production
+  AI configuration and V2 rollout are not complete.
+- **Theme-aware landing logo (2026-10-17, branch only).** Patch 2.1.3
+  carries the V1 dark logo into V2 and adds a light-surface variant in the
+  same header location. Lint, typecheck, 83 default tests, focused Chromium
+  theme coverage, and isolated build pass. Owner deferred book import/export
+  and relationship handle expansion until after launch; production
+  configuration remains open.
 - **Auth password visibility (2026-10-17, branch only).** Patch 2.1.2 adds
   labeled eye buttons to `/signin` and `/signup`, with a visible keyboard focus
   state and unchanged password value when toggled. Lint, typecheck, 83 default
@@ -488,7 +526,7 @@ Most recent first. Use this to tell deliberate state from unfinished work.
   and passed focused browser, lint, and typecheck checks. Version advanced to 2.0.1 at
   completion; subsequent unfinished Writer work moved the files to 2.0.2.
 - **Supabase confirmation-mail investigation (2026-10-17, no mutations).** The local app
-  is configured against the isolated V2 preview project. No code or Supabase settings were
+  was configured against the isolated V2 preview project. No code or Supabase settings were
   changed, and the provider-side delivery cause was not conclusively established. Continue
   with preview Auth logs and SMTP/provider configuration; do not touch deployed V1.
 - **V2 Step 8 local/preview gate complete (2026-10-17, branch only).** Full
