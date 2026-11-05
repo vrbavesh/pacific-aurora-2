@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pause, Play, Plus } from "@phosphor-icons/react";
 import ThemeSettings from "@/src/components/home/ThemeSettings";
 import BookJourney from "./BookJourney";
@@ -19,15 +19,6 @@ export default function LandingExperience() {
   const [paused, setPaused] = useState(false);
   const [reduced, setReduced] = useState(true);
   const [tabVisible, setTabVisible] = useState(true);
-  useLayoutEffect(() => {
-    try {
-      if (!localStorage.getItem("pacific_aurora_theme")) {
-        document.documentElement.dataset.theme = "light";
-        document.documentElement.classList.remove("dark");
-        document.documentElement.style.colorScheme = "light";
-      }
-    } catch { /* The landing remains usable without storage. */ }
-  }, []);
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const motionPreference = () => setReduced(media.matches);

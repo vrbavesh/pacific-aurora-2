@@ -1,11 +1,14 @@
 # Pacific Aurora
 
-**Version 2.4.3 on `codex/frontend-design-testing`.** The Cinematic Orbit landing
+**Version 2.4.4 on `codex/frontend-design-testing`.** The Cinematic Orbit landing
 refines the white-book-on-white-board experience with orbital camera transitions,
 normal resting pages and synchronized content fades. Opening pages
 rotate with the cover; subsequent turns start only after content fades out. The castle reveal
 and centered close lead directly into FAQ.
 Production remains V2.1.4.
+
+The landing's warm white and charcoal palette is now the default across the app.
+The previous navy theme remains available through the existing appearance switch.
 
 This is an experimental preview. The final visual review still calls for rebuilding
 the book and landscape materials to match the approved concept's finish.

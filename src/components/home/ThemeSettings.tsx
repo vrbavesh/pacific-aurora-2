@@ -16,13 +16,13 @@ function applyTheme(theme: Theme) {
 export default function ThemeSettings({ compact = false }: { compact?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const sync = () => setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
     const onStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return;
-      applyTheme(event.newValue === "light" ? "light" : "dark");
+      applyTheme(event.newValue === "dark" ? "dark" : "light");
       sync();
     };
     sync();

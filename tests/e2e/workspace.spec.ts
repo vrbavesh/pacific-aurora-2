@@ -177,10 +177,15 @@ test("writer word count updates when text is pasted", async ({ page }) => {
 test("settings persists light and dark themes across routes and restores focus", async ({ page }) => {
   await fixture(page);
   await page.goto("/home");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(await page.evaluate(() => localStorage.getItem("pacific_aurora_theme"))).toBeNull();
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(250, 250, 248)");
   const settings = page.getByRole("button", { name: "Settings" });
   await settings.click();
   const dialog = page.getByRole("dialog", { name: "Settings" });
   await expect(dialog).toBeVisible();
+  await dialog.getByRole("radio", { name: "Dark" }).check();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await dialog.getByRole("radio", { name: "Light" }).check();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(await page.evaluate(() => localStorage.getItem("pacific_aurora_theme"))).toBe("light");
@@ -191,7 +196,7 @@ test("settings persists light and dark themes across routes and restores focus",
   for (const route of ["/books/book-1", "/privacy", "/terms", "/signin", "/"]) {
     await page.goto(route);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(243, 248, 247)");
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(250, 250, 248)");
   }
 
   const logo = page.getByRole("link", { name: "Pacific Aurora home" });
@@ -201,6 +206,7 @@ test("settings persists light and dark themes across routes and restores focus",
   const landingThemeToggle = page.getByRole("button", { name: "Switch to dark theme" });
   await landingThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(5, 13, 20)");
   await expect(logo).toHaveText("Pacific Aurora");
   expect(await logo.evaluate(element => getComputedStyle(element).color)).toBe("rgb(241, 240, 235)");
   expect(await page.evaluate(() => localStorage.getItem("pacific_aurora_theme"))).toBe("dark");

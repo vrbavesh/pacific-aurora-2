@@ -174,7 +174,7 @@ export default function SigninPage() {
               checked={agreed}
               onChange={(event) => setAgreed(event.target.checked)}
               disabled={loading}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[#2dd4bf] disabled:opacity-50"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-accent disabled:opacity-50"
             />
             <label htmlFor="signin-consent" className="text-xs leading-5 text-foreground-muted">
               I agree to the{" "}
@@ -219,7 +219,7 @@ export default function SigninPage() {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border" />
           </div>
-          <div className="relative flex justify-center text-[10px] uppercase tracking-widest text-foreground-subtle/70">
+          <div className="relative flex justify-center text-[10px] uppercase tracking-widest text-foreground-muted">
             <span className="bg-background-elevated/90 px-3 py-0.5 rounded-full border border-border">
               or continue with
             </span>

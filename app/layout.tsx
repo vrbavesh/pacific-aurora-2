@@ -34,9 +34,9 @@ export default async function RootLayout({
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang="en" className="dark" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("pacific_aurora_theme");if(t==="light"){document.documentElement.dataset.theme="light";document.documentElement.classList.remove("dark");document.documentElement.style.colorScheme="light"}else{document.documentElement.style.colorScheme="dark"}}catch(e){document.documentElement.style.colorScheme="dark"}` }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("pacific_aurora_theme")==="dark"){document.documentElement.dataset.theme="dark";document.documentElement.classList.add("dark");document.documentElement.style.colorScheme="dark"}else{document.documentElement.style.colorScheme="light"}}catch(e){document.documentElement.style.colorScheme="light"}` }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased bg-background text-foreground overflow-x-hidden min-h-screen`}

@@ -113,13 +113,13 @@ components:
 
 **Creative North Star: "Manuscript Architecture"**
 
-Version 2.4.3 refines the complete white-book landing at / on codex/frontend-design-testing with the owner's approved Cinematic Orbit direction. A dimensional white volume rests on a beveled board, rises through a wider camera arc beside restrained copy, and opens into readable product pages. The opening page block rotates with the cover. Both reading pages rest normally, with no raised foreground leaf. Each spread fades its content in and out before the seven bending leaves turn; the camera pulls back around the castle before a centered invitation appears outside the book. FAQ and a minimal legal footer remain the only sections after the journey.
+Version 2.4.4 refines the complete white-book landing at / on codex/frontend-design-testing with the owner's approved Cinematic Orbit direction. A dimensional white volume rests on a beveled board, rises through a wider camera arc beside restrained copy, and opens into readable product pages. The opening page block rotates with the cover. Both reading pages rest normally, with no raised foreground leaf. Each spread fades its content in and out before the seven bending leaves turn; the camera pulls back around the castle before a centered invitation appears outside the book. FAQ and a minimal legal footer remain the only sections after the journey.
 
 The owner's explicit correction, recorded in .impeccable/landing-direction.md, supersedes both earlier static compositions and the 2.3.0 hero followed by separate product sections. The visual world is now white on white, charcoal text, soft dimensional shadows, and restrained dark actions, with the castle providing the final color release. The former sculpture row, editable sample, world split, relationship graph, and separate closing scene are removed, not retained as component patterns.
 
 The approved three-frame reference is animation-plans/book-refinement/.impeccable/mocks/03-cinematic-orbit.png. It governs the closed book, readable spread, and castle keyframes as one motion/material contract, not three separate sections. The owner's latest 2026-11-05 correction removes the raised foreground sheet and makes the sequence strictly open, fade in, fade out, then turn. It supersedes the previous overlapping-fade choreography without establishing that any historical reproduction gate passed.
 
-This document governs only app/page.tsx and src/components/landing/. Auth, home, Writer, worlds, and other workspaces retain their existing global systems. The landing uses the plain-text Pacific Aurora wordmark and the existing shared browser theme preference. Existing logo and raster assets elsewhere in the repository are unaffected; the current landing ships no raster imagery.
+The landing composition governs app/page.tsx and src/components/landing/. Its warm white, charcoal, and neutral surface tokens are now the default across all routes; the previous navy palette remains selectable as Dark through the shared browser theme preference. Auth, home, Writer, worlds, and other workspaces keep their existing layouts and controls. The landing uses the plain-text Pacific Aurora wordmark. Existing logo and raster assets elsewhere in the repository are unaffected; the current landing ships no raster imagery.
 
 **Key Characteristics:**
 
@@ -231,7 +231,7 @@ Native details and summary elements provide FAQ disclosure behavior, with a plus
 - **Do** drive geometry, outside text, and page opacity/visibility from the same effective pose.
 - **Do** preserve the current scene when paused and expose all three reading pages for reduced motion or WebGL failure.
 - **Do** retain the shared theme preference, visible keyboard focus, eight chapter destinations, skip-to-FAQ path, signup, Sign in, and legal links.
-- **Do** keep these visual rules scoped to the experimental landing; other application surfaces and assets retain their existing systems.
+- **Do** share the landing's light palette across routes while keeping other application layouts and the saved Dark choice intact.
 
 ### Don't:
 
