@@ -1,0 +1,25 @@
+# Landing page
+
+Scope: `/` only. Mode: Persuade. Audience: fiction writers. Action: Start writing at `/signup`. Preserve `/signin`, legal links, existing logo assets, and theme persistence. Branch: `codex/frontend-design-testing`.
+
+## Direction contract
+
+THESIS: Manuscript Architecture turns pages into an inhabited world, replacing the long mock-dashboard landing page with one cinematic paper landscape.
+
+OWN-WORLD: The owner's newest pinned material world is white on white: a white volume on a white board in a quiet studio, soft dimensional shadows, charcoal type, and restrained dark actions. The castle is the final color release. Tight grotesk typography and the manuscript-as-world mechanism remain. The existing workspace design is outside this contract.
+
+STORY: A writer sees a manuscript become a place, discovers the people and events it can hold, understands that multiple books share one world, then starts writing.
+
+FIRST VIEWPORT: Navigation is minimal. The white book rests on a white board and dominates the full-viewport stage. On scroll, it lifts as copy appears on its sides. It opens and the camera moves into the book; actual semantic product content is projected onto the physical page planes. Reading holds introduce Writing, Worlds, and Connections between seven bending page turns. Before FAQ, the book settles and raises the castle; centered content appears outside the book. Reverse scrolling reverses the sequence. On narrow screens, the camera follows the readable right page rather than shrinking the whole spread. Pause freezes the current page; reduced motion or WebGL failure exposes all three pages in a linear layout. The only content after the book is FAQ and a minimal legal footer.
+
+FORM: Grounded candidate 4, paper engineering and architectural study models. Seed `923f768b`. Approved by the owner: option 1, "build it". Comp: `.impeccable/mocks/decision/manuscript-architecture.png`. The landing uses the approved mockup's plain Pacific Aurora wordmark; existing logo assets and other application surfaces remain intact.
+
+MOTION REVISION: Version 2.4.0 follows the owner's explicit correction: remove everything else and make the book the whole landing, white on white, with side copy, real on-page content, page turns and a centered castle finale before FAQ. This supersedes both previous static comps and the 2.3.0 book-hero-plus-old-sections structure. No old reproduction approval is claimed. Design dials: variance 9, motion 10, density 3. Purpose: explanation and first-visit delight. One demand-rendered R3F canvas owns geometry and camera. Drei Html anchors semantic page content to its world transforms. Motion owns scroll score and outside DOM text, never the same property as R3F. Existing theme persistence, sign-in, signup and legal routes remain untouched. The old sculpture row, editable sample, world split, graph, and separate closing section are explicitly removed.
+
+REFINEMENT APPROVAL: On 2026-10-18 the owner selected "3, get started": `animation-plans/book-refinement/.impeccable/mocks/03-cinematic-orbit.png` (prompt sidecar approved). This is the current visual reference for all three scroll keyframes. Keep the white-on-white world and topology. Refine dimensional paper/cover/spine, neutral lighting, and architectural castle detail. Signature motion: a wider reversible camera arc during lift/open and page-turn transitions, a large curling foreground sheet confined to the left of the readable spread, stable gently angled reading holds, then a lower pullback around the castle. No orbit while reading. Page HTML and all outside text follow the same effective pose as geometry. Visible signup actions remain operable throughout their reveals. Mobile may frame the right page instead of copying the desktop camera. No static raster replaces the moving book, text, or castle. The three-frame storyboard is a motion/material contract, not three new page sections.
+
+MOTION CORRECTION (2026-11-05): The owner explicitly replaces stale scroll holds with continuous fades. Rotate the opening page block with the front cover, fade each spread in as it opens, then start fading out and turning on the next scroll increment. Keep pause and reverse scrubbing. This supersedes the older stable-hold/no-orbit-during-reading rule; the visual world, content, material reference, finale and fallback remain unchanged.
+
+SEQUENTIAL CORRECTION (2026-11-05, latest): The owner's screenshot identifies the raised left foreground leaf for removal. Both resting pages must be normal and symmetrical. The explicit flow is scroll, book opens, page open, content fades in, scroll, content fades out, then pages turn. This supersedes the earlier same-day overlapping fades/turns and the original foreground-curl requirement. Keep text hidden throughout page turns, and reveal the next spread only after its final leaf lands. The cover-following opening stack, reverse scrubbing, pause, fallback and finale remain.
+
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

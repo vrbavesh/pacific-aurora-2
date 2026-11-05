@@ -1,7 +1,14 @@
 # Pacific Aurora
 
-**Version 2.1.4 on `codex/pacific-aurora-v2`.** V1.3.1 remains deployed until the
-V2 migration and release are explicitly approved.
+**Version 2.4.3 on `codex/frontend-design-testing`.** The Cinematic Orbit landing
+refines the white-book-on-white-board experience with orbital camera transitions,
+normal resting pages and synchronized content fades. Opening pages
+rotate with the cover; subsequent turns start only after content fades out. The castle reveal
+and centered close lead directly into FAQ.
+Production remains V2.1.4.
+
+This is an experimental preview. The final visual review still calls for rebuilding
+the book and landscape materials to match the approved concept's finish.
 
 A serene, private writing and worldbuilding workspace. Pacific Aurora gives fiction a
 persistent world behind it: characters, places, items, relationships, and your own custom

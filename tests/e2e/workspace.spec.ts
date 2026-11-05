@@ -195,14 +195,14 @@ test("settings persists light and dark themes across routes and restores focus",
   }
 
   const logo = page.getByRole("link", { name: "Pacific Aurora home" });
-  await expect(logo.locator('img[src="/pacific-aurora-logo-light.svg"]')).toBeVisible();
-  await expect(logo.locator('img[src="/pacific-aurora-logo.svg"]')).toBeHidden();
+  await expect(logo).toHaveText("Pacific Aurora");
+  expect(await logo.evaluate(element => getComputedStyle(element).color)).toBe("rgb(39, 43, 43)");
 
   const landingThemeToggle = page.getByRole("button", { name: "Switch to dark theme" });
   await landingThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await expect(logo.locator('img[src="/pacific-aurora-logo.svg"]')).toBeVisible();
-  await expect(logo.locator('img[src="/pacific-aurora-logo-light.svg"]')).toBeHidden();
+  await expect(logo).toHaveText("Pacific Aurora");
+  expect(await logo.evaluate(element => getComputedStyle(element).color)).toBe("rgb(241, 240, 235)");
   expect(await page.evaluate(() => localStorage.getItem("pacific_aurora_theme"))).toBe("dark");
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -243,7 +243,7 @@ test("light route surfaces retain accessible contrast", async ({ page }) => {
     await page.goto(route);
     if (route === "/home") await expect(page.getByText("The Far Shore").first()).toBeVisible();
     if (route === "/books/book-1") await expect(page.getByRole("textbox", { name: "Introduction manuscript" })).toBeVisible();
-    if (["/signin", "/signup", "/forgot-password"].includes(route)) {
+    if (["/home", "/signin", "/signup", "/forgot-password"].includes(route)) {
       await page.waitForFunction(() =>
         [...document.querySelectorAll('main [style*="opacity"]')].every(
           (element) => getComputedStyle(element).opacity === "1",

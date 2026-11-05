@@ -1,0 +1,38 @@
+.page { --ground: #fafaf8; --ink: #272b2b; --muted: #626764; --action: #272b2b; position: relative; isolation: isolate; overflow: clip; background: var(--ground); color: var(--ink); font-family: var(--font-geist-sans), sans-serif; }
+.page ::selection { color: #fafaf8; background: #626764; }
+.page :focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+.header { position: absolute; z-index: var(--z-sticky); top: 0; left: 5%; right: 5%; height: clamp(64px, 8.2vh, 84px); display: flex; align-items: center; justify-content: space-between; }
+.logo { font-size: clamp(18px, 1.65vw, 24px); font-weight: 450; letter-spacing: -.04em; }
+.header nav { display: flex; gap: clamp(24px, 2.4vw, 34px); font-size: clamp(12px, 1vw, 14px); }
+.skipLink { position: fixed; z-index: var(--z-toast); top: 12px; left: 12px; padding: 12px 18px; background: var(--ink); color: var(--ground); transform: translateY(-200%); }
+.skipLink:focus { transform: none; }
+.questionsSection { position: relative; max-width: 880px; margin: 0 auto; padding: 130px 32px 110px; scroll-margin-top: 40px; }
+.questionsSection h2 { margin-bottom: 55px; text-align: center; font-size: clamp(32px, 4vw, 48px); font-weight: 450; line-height: 1.1; letter-spacing: -.035em; }
+.questions details { padding: 24px 0; border-bottom: 1px solid color-mix(in srgb, var(--ink) 17%, transparent); }
+.questions summary { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 32px; list-style: none; cursor: pointer; font-size: 16px; }
+.questions summary::-webkit-details-marker { display: none; }
+.questions summary svg { flex-shrink: 0; transition: transform var(--duration-normal) var(--ease-out); }
+.questions details[open] summary svg { transform: rotate(45deg); }
+.questions details p { margin-top: 20px; max-width: 65ch; color: var(--muted); font-size: 15px; line-height: 1.8; }
+.footer { margin: 0 4%; padding: 30px 0 75px; display: flex; align-items: center; flex-wrap: wrap; gap: 24px 40px; border-top: 1px solid color-mix(in srgb, var(--ink) 15%, transparent); font-size: 13px; }
+.footer > a { font-size: 18px; letter-spacing: -.035em; margin-right: auto; }
+.footer nav { display: flex; gap: 24px; }
+.footer small { font-size: 11px; color: var(--muted); }
+.appearance { position: fixed; z-index: var(--z-sticky); right: 18px; bottom: 18px; display: flex; gap: 8px; }
+.appearance button, .motionButton { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); color: var(--ink); background: var(--ground); cursor: pointer; }
+.motionButton:active { transform: scale(.97); }
+.motionButton:disabled { opacity: .45; cursor: default; }
+:global(:root[data-theme="dark"]) .page { --ground: #161a1a; --ink: #f1f0eb; --muted: #bfc5c1; --action: #f1f0eb; }
+@media(max-width:767px) {
+  .header { height: 76px; left: 22px; right: 22px; }
+  .logo { font-size: 20px; }
+  .header nav { gap: 22px; font-size: 12px; }
+  .header nav a:first-child { display: none; }
+  .questionsSection { padding: 90px 24px; }
+  .questionsSection h2 { margin-bottom: 32px; }
+  .questions summary { font-size: 14px; }
+  .questions details p { font-size: 14px; }
+  .footer { margin: 0 24px; padding-bottom: 100px; gap: 22px; }
+  .footer > a { width: 100%; }
+  .appearance { right: 14px; bottom: 14px; }
+}

@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T18:09:44Z",
+  "title": "Design System: Pacific Aurora — Manuscript Architecture",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Studio Ground",
+        "tonalRamp": [
+          "oklch(15% 0.003 105)",
+          "oklch(26% 0.003 105)",
+          "oklch(38% 0.003 105)",
+          "oklch(50% 0.003 105)",
+          "oklch(62% 0.003 105)",
+          "oklch(74% 0.003 105)",
+          "oklch(86% 0.003 105)",
+          "oklch(95% 0.003 105)"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Charcoal Ink",
+        "tonalRamp": [
+          "oklch(15% 0.006 190)",
+          "oklch(26% 0.006 190)",
+          "oklch(38% 0.006 190)",
+          "oklch(50% 0.006 190)",
+          "oklch(62% 0.006 190)",
+          "oklch(74% 0.006 190)",
+          "oklch(86% 0.006 190)",
+          "oklch(95% 0.006 190)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Quiet Gray",
+        "tonalRamp": [
+          "oklch(15% 0.009 155)",
+          "oklch(26% 0.009 155)",
+          "oklch(38% 0.009 155)",
+          "oklch(50% 0.009 155)",
+          "oklch(62% 0.009 155)",
+          "oklch(74% 0.009 155)",
+          "oklch(86% 0.009 155)",
+          "oklch(95% 0.009 155)"
+        ]
+      },
+      "page-ink": {
+        "role": "neutral",
+        "displayName": "Page Ink",
+        "tonalRamp": [
+          "oklch(15% 0.009 150)",
+          "oklch(26% 0.009 150)",
+          "oklch(38% 0.009 150)",
+          "oklch(50% 0.009 150)",
+          "oklch(62% 0.009 150)",
+          "oklch(74% 0.009 150)",
+          "oklch(86% 0.009 150)",
+          "oklch(95% 0.009 150)"
+        ]
+      },
+      "page-muted": {
+        "role": "neutral",
+        "displayName": "Page Gray",
+        "tonalRamp": [
+          "oklch(15% 0.014 150)",
+          "oklch(26% 0.014 150)",
+          "oklch(38% 0.014 150)",
+          "oklch(50% 0.014 150)",
+          "oklch(62% 0.014 150)",
+          "oklch(74% 0.014 150)",
+          "oklch(86% 0.014 150)",
+          "oklch(95% 0.014 150)"
+        ]
+      },
+      "static-paper": {
+        "role": "neutral",
+        "displayName": "Flat Paper",
+        "tonalRamp": [
+          "oklch(15% 0.008 105)",
+          "oklch(26% 0.008 105)",
+          "oklch(38% 0.008 105)",
+          "oklch(50% 0.008 105)",
+          "oklch(62% 0.008 105)",
+          "oklch(74% 0.008 105)",
+          "oklch(86% 0.008 105)",
+          "oklch(95% 0.008 105)"
+        ]
+      },
+      "dark-ground": {
+        "role": "neutral",
+        "displayName": "Night Studio",
+        "tonalRamp": [
+          "oklch(15% 0.006 190)",
+          "oklch(26% 0.006 190)",
+          "oklch(38% 0.006 190)",
+          "oklch(50% 0.006 190)",
+          "oklch(62% 0.006 190)",
+          "oklch(74% 0.006 190)",
+          "oklch(86% 0.006 190)",
+          "oklch(95% 0.006 190)"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Pale Ink",
+        "tonalRamp": [
+          "oklch(15% 0.007 100)",
+          "oklch(26% 0.007 100)",
+          "oklch(38% 0.007 100)",
+          "oklch(50% 0.007 100)",
+          "oklch(62% 0.007 100)",
+          "oklch(74% 0.007 100)",
+          "oklch(86% 0.007 100)",
+          "oklch(95% 0.007 100)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Soft Pale Gray",
+        "tonalRamp": [
+          "oklch(15% 0.009 150)",
+          "oklch(26% 0.009 150)",
+          "oklch(38% 0.009 150)",
+          "oklch(50% 0.009 150)",
+          "oklch(62% 0.009 150)",
+          "oklch(74% 0.009 150)",
+          "oklch(86% 0.009 150)",
+          "oklch(95% 0.009 150)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Book introduction",
+        "purpose": "Fluid outside introduction for the approved Cinematic Orbit closed-book frame."
+      },
+      "side-heading": {
+        "displayName": "Lift-side copy",
+        "purpose": "Two quiet headings flanking the lifting volume."
+      },
+      "finale": {
+        "displayName": "Castle finale",
+        "purpose": "Centered invitation outside the book, immediately before FAQ."
+      },
+      "body": {
+        "displayName": "Introduction prose",
+        "purpose": "Fluid introduction prose outside the physical pages."
+      },
+      "page-heading": {
+        "displayName": "Page topic",
+        "purpose": "Writing, Worlds, and Connections article headings."
+      },
+      "page-subheading": {
+        "displayName": "Page explanation",
+        "purpose": "Second heading within a semantic right-page article."
+      },
+      "page-body": {
+        "displayName": "Page summary",
+        "purpose": "Readable product explanation anchored to the book plane."
+      },
+      "page-definition": {
+        "displayName": "Page detail",
+        "purpose": "Definition-list descriptions within each reading page."
+      },
+      "wordmark": {
+        "displayName": "Text wordmark",
+        "purpose": "Fluid plain Pacific Aurora header identity; mobile retains its own size."
+      },
+      "action": {
+        "displayName": "Signup action",
+        "purpose": "Fluid neutral signup pill shared by intro and finale, remaining operable throughout visible reveals."
+      },
+      "chapter-label": {
+        "displayName": "Keyboard chapter",
+        "purpose": "Eight focus-revealed navigation destinations."
+      },
+      "navigation": {
+        "displayName": "Header navigation",
+        "purpose": "Fluid Questions and Sign in links, with an explicit mobile size."
+      }
+    },
+    "motion": [
+      {
+        "name": "duration-fast",
+        "value": "120ms",
+        "purpose": "Existing global duration for signup hover/active transforms."
+      },
+      {
+        "name": "duration-normal",
+        "value": "200ms",
+        "purpose": "Existing global duration for FAQ plus rotation."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Existing global easing for interface transitions."
+      },
+      {
+        "name": "book-lift",
+        "value": "normalized scroll 0.07–0.20",
+        "purpose": "Lift the white book from its board."
+      },
+      {
+        "name": "book-open",
+        "value": "normalized scroll 0.235–0.355",
+        "purpose": "Hinge the volume and page block together. The cover hinge lowers from .35 to .015; the left stack rotates by coverAngle minus pi and translates vertically by .31 times (1 minus open), never growing sideways. Both semantic page planes remain at .38. A separately cloned color texture rotates by pi around its center to keep the left decorative footer upright, and is disposed with the scene."
+      },
+      {
+        "name": "content-fades",
+        "value": "linear start/peak/end: Writing .355/.37/.43; Worlds .535/.55/.61; Connections .695/.71/.77",
+        "purpose": "Wait for the spread to open, fade in, fade out on the next scroll increment, then turn only at zero opacity. The next content waits until all leaves land. Effective-pose opacity and hidden state update on the same frame; dedicated sibling Html portal hosts preserve runtime reduced-motion cleanup."
+      },
+      {
+        "name": "page-turns",
+        "value": "0.43–0.495, 0.46–0.535, 0.61–0.665, 0.63–0.695, 0.77–0.815, 0.79–0.84, 0.815–0.86",
+        "purpose": "Seven corner-led twisting leaves turn only after content is hidden. Shared geometry supports separate front and reverse surfaces; the cloned reverse texture keeps printing readable and is disposed. No decorative raised foreground leaf remains; resting left and right stacks share the same shallow bound-page shape."
+      },
+      {
+        "name": "camera-reading",
+        "value": "enter 0.31–0.37; leave 0.79–0.84",
+        "purpose": "Keep the spread still while content fades, then follow its blank turning leaves. Retain right-page framing below 1000px canvas width and clamp the aspect-responsive paper projection factor to 1.6–2.5."
+      },
+      {
+        "name": "book-settle",
+        "value": "normalized scroll 0.805–0.88",
+        "purpose": "Settle the open volume before the final castle reveal."
+      },
+      {
+        "name": "castle-rise",
+        "value": "normalized scroll 0.875–0.975",
+        "purpose": "Grow the island city from scene height .43; rippled 160×28-segment ring water, 36 shore rocks, and 46 three-tier trees with 138 foliage instances provide live geometry detail."
+      },
+      {
+        "name": "outside-finale",
+        "value": "opacity 0–1 over 0.92–0.975; translation 45px–0 over 0.92–1",
+        "purpose": "Center the signup invitation outside the book before FAQ."
+      },
+      {
+        "name": "chapter-targets",
+        "value": "0, 0.18, 0.3, 0.37, 0.55, 0.71, 0.9, 1",
+        "purpose": "Eight instant keyboard destinations snap target and effective pose together before scrolling."
+      },
+      {
+        "name": "demand-rendering",
+        "value": "frameloop=demand; damping 10; settle tolerance 0.0001; pixel ratio 1–1.5",
+        "purpose": "One target MotionValue and one effective rendered pose. The scene damps and publishes at frame priority -1 before geometry/camera; text and hidden page wrappers follow it. Pause, hidden tabs, and offscreen state freeze target/damping while retaining content; reduced motion or WebGL failure uses the flat semantic layout."
+      },
+      {
+        "name": "cinematic-orbit",
+        "value": "wider lift/open arc; stationary spread during fades; page-turn sweep after text is gone; lower castle pullback",
+        "purpose": "Approved Cinematic Orbit refinement of the same continuous book topology, with aspect-dependent closed-book scale."
+      },
+      {
+        "name": "operable-reveals",
+        "value": "intro p < 0.12; side 0.075 < p < 0.30; finale p > 0.92",
+        "purpose": "Outside accessibility/inert state follows visible reveal windows from the effective pose; React synchronously bridges only discrete state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "right-page-camera",
+        "value": "1000px"
+      },
+      {
+        "name": "mobile-layout",
+        "value": "767px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Signup Link",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "One neutral pill style shared by the book introduction and finale.",
+      "html": "<a class=\"ds-primary\" href=\"/signup\">Start writing <svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M40 128h176m-72-72 72 72-72 72\"/></svg></a>",
+      "css": ".ds-primary{font-family:var(--font-geist-sans,sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:22px;border-radius:999px;padding:12px 24px;min-height:44px;margin-top:28px;background:#272b2b;color:#fafaf8;font-size:clamp(12px,1.2vw,14px);white-space:nowrap;text-decoration:none;transition:transform 120ms cubic-bezier(.16,1,.3,1)}.ds-primary:active{transform:scale(.97)}.ds-primary:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}@media(hover:hover) and (pointer:fine){.ds-primary:hover{transform:translateY(-2px)}}@media(max-width:767px){.ds-primary{min-height:46px;padding:13px 23px;font-size:13px;margin-top:22px}}"
+    },
+    {
+      "name": "Minimal Header",
+      "kind": "nav",
+      "description": "Text wordmark with Questions and Sign in; signup belongs to the book content.",
+      "html": "<header class=\"ds-header\"><a class=\"ds-wordmark\" href=\"/\" aria-label=\"Pacific Aurora home\">Pacific Aurora</a><nav aria-label=\"Main navigation\"><a href=\"#questions\">Questions</a><a href=\"/signin\">Sign in</a></nav></header>",
+      "css": ".ds-header{font-family:var(--font-geist-sans,sans-serif);display:flex;align-items:center;justify-content:space-between;height:clamp(64px,8.2vh,84px);color:#272b2b}.ds-header a{color:inherit;text-decoration:none}.ds-header a:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}.ds-wordmark{font-size:clamp(18px,1.65vw,24px);font-weight:450;letter-spacing:-.04em}.ds-header nav{display:flex;gap:clamp(24px,2.4vw,34px);font-size:clamp(12px,1vw,14px)}@media(max-width:767px){.ds-header{height:76px}.ds-wordmark{font-size:20px}.ds-header nav{gap:22px;font-size:12px}.ds-header nav a:first-child{display:none}}"
+    },
+    {
+      "name": "Physical Reading Page",
+      "kind": "custom",
+      "refersTo": "physical-page",
+      "description": "The semantic Writing article is anchored at scene height .38, matching the left page above 48-sheet curved stacks. A light host represents the procedural paper material in this standalone preview.",
+      "html": "<div class=\"ds-page-host\"><article class=\"ds-page\" aria-label=\"Book page: Writing\"><h2>Writing</h2><h3>A place for every chapter.</h3><p>Write your book with the world close at hand.</p><dl><div><dt>Make the words yours.</dt><dd>Format your manuscript, organize chapters, and keep the sentence in front of you.</dd></div><div><dt>Save deliberately.</dt><dd>Explicit Save, Ctrl/Cmd+S, and session drafts for recovery.</dd></div></dl><p class=\"ds-page-foot\">Your words. Your world. Your decisions.</p></article></div>",
+      "css": ".ds-page-host{display:inline-block;background:#fcfcf9}.ds-page{font-family:var(--font-geist-sans,sans-serif);box-sizing:border-box;width:300px;min-height:430px;padding:22px 20px;color:#313733;background:transparent;text-align:left}.ds-page h2{font-size:32px;font-weight:450;line-height:1.05;letter-spacing:-.035em;margin:12px 0 28px}.ds-page h3{font-size:19px;line-height:1.25;letter-spacing:-.025em;font-weight:450;margin:0 0 16px}.ds-page>p{font-size:14px;line-height:1.65;color:#606963}.ds-page dl{margin-top:25px}.ds-page dl>div+div{margin-top:22px}.ds-page dt{font-size:14px;font-weight:550}.ds-page dd{font-size:13px;line-height:1.6;color:#606963;margin:8px 0 0}.ds-page .ds-page-foot{margin-top:32px;font-size:9px;color:#606963}"
+    },
+    {
+      "name": "Left Title Page",
+      "kind": "custom",
+      "refersTo": "physical-page",
+      "description": "Decorative left-page counterpart at the same .38 scene height as the right article; hidden from assistive technology.",
+      "html": "<div class=\"ds-title-host\"><article class=\"ds-title-page\" aria-hidden=\"true\"><p class=\"ds-page-brand\">Pacific Aurora</p><div class=\"ds-page-title\">Stay with the story.</div></article></div>",
+      "css": ".ds-title-host{display:inline-block;background:#fcfcf9}.ds-title-page{font-family:var(--font-geist-sans,sans-serif);box-sizing:border-box;width:300px;min-height:430px;padding:22px 20px;color:#313733;background:transparent;display:flex;flex-direction:column;text-align:left}.ds-page-brand{font-size:12px;letter-spacing:-.02em;margin-top:14px;color:#606963;line-height:1.65}.ds-page-title{margin-top:84px;font-size:43px;line-height:1.03;letter-spacing:-.04em;font-weight:400}"
+    },
+    {
+      "name": "Focus-Revealed Chapter Navigation",
+      "kind": "nav",
+      "refersTo": "chapter-button",
+      "description": "Eight keyboard destinations. Focus a button to reveal this local preview of the normally fixed panel; the live component jumps to scroll positions.",
+      "html": "<div class=\"ds-nav-preview\"><nav class=\"ds-chapter-nav\" aria-label=\"Book journey chapters\"><button type=\"button\" aria-label=\"Begin\" aria-current=\"step\">Begin</button><button type=\"button\" aria-label=\"Lift\">Lift</button><button type=\"button\" aria-label=\"Open\">Open</button><button type=\"button\" aria-label=\"Writing\">Writing</button><button type=\"button\" aria-label=\"Worlds\">Worlds</button><button type=\"button\" aria-label=\"Connections\">Connections</button><button type=\"button\" aria-label=\"Reveal\">Reveal</button><button type=\"button\" aria-label=\"Your world\">Your world</button></nav></div>",
+      "css": ".ds-nav-preview{position:relative;min-height:180px;overflow:hidden}.ds-chapter-nav{font-family:var(--font-geist-sans,sans-serif);position:absolute;top:12px;left:12px;transform:translateY(-200%);display:flex;flex-wrap:wrap;gap:8px;padding:12px;max-width:calc(100% - 24px);background:#fafaf8}.ds-chapter-nav:focus-within{transform:none}.ds-chapter-nav button{font-family:var(--font-geist-sans,sans-serif);padding:10px;min-height:44px;background:transparent;border:0;color:#272b2b;cursor:pointer;font-size:12px}.ds-chapter-nav button:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}"
+    },
+    {
+      "name": "Question Disclosure",
+      "kind": "custom",
+      "description": "Native FAQ pattern shown after the book journey.",
+      "html": "<details class=\"ds-question\"><summary><span>Can I write more than one book in a world?</span><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M40 128h176M128 40v176\"/></svg></summary><p>Yes. Every book belongs to one world, and a world can hold multiple books. Your world information stays connected while each book keeps its own chapters and character timelines.</p></details>",
+      "css": ".ds-question{font-family:var(--font-geist-sans,sans-serif);padding:24px 0;border-bottom:1px solid color-mix(in srgb,#272b2b 17%,transparent);color:#272b2b}.ds-question summary{display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:32px;list-style:none;cursor:pointer;font-size:16px}.ds-question summary::-webkit-details-marker{display:none}.ds-question summary:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}.ds-question summary svg{flex-shrink:0;transition:transform 200ms cubic-bezier(.16,1,.3,1)}.ds-question[open] summary svg{transform:rotate(45deg)}.ds-question p{margin-top:20px;max-width:65ch;color:#626764;font-size:15px;line-height:1.8}@media(max-width:767px){.ds-question summary,.ds-question p{font-size:14px}}"
+    },
+    {
+      "name": "Motion Control",
+      "kind": "button",
+      "refersTo": "motion-control",
+      "description": "Visual primitive for Pause/Play. The live control freezes the effective pose and keeps scene and semantic pages mounted.",
+      "html": "<button class=\"ds-motion\" type=\"button\" aria-label=\"Pause motion\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M88 48v160M168 48v160\"/></svg></button>",
+      "css": ".ds-motion{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;border:1px solid color-mix(in srgb,#272b2b 22%,transparent);color:#272b2b;background:#fafaf8;cursor:pointer}.ds-motion:active{transform:scale(.97)}.ds-motion:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}.ds-motion:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Minimal Legal Footer",
+      "kind": "nav",
+      "description": "The only content after FAQ: wordmark, legal links, and copyright.",
+      "html": "<footer class=\"ds-footer\"><a class=\"ds-footer-brand\" href=\"/\">Pacific Aurora</a><nav aria-label=\"Footer navigation\"><a href=\"/privacy\">Privacy Policy</a><a href=\"/terms\">Terms and Conditions</a></nav><small>© 2026 Pacific Aurora</small></footer>",
+      "css": ".ds-footer{font-family:var(--font-geist-sans,sans-serif);padding:30px 0 75px;display:flex;align-items:center;flex-wrap:wrap;gap:24px 40px;border-top:1px solid color-mix(in srgb,#272b2b 15%,transparent);font-size:13px;color:#272b2b}.ds-footer a{color:inherit;text-decoration:none}.ds-footer a:focus-visible{outline:2px solid #272b2b;outline-offset:5px;}.ds-footer-brand{font-size:18px;letter-spacing:-.035em;margin-right:auto}.ds-footer nav{display:flex;gap:24px}.ds-footer small{font-size:11px;color:#626764}@media(max-width:767px){.ds-footer{padding-bottom:100px;gap:22px}.ds-footer-brand{width:100%}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Manuscript Architecture",
+    "overview": "Version 2.4.3 refines the complete white-book landing at / on codex/frontend-design-testing with the owner's approved Cinematic Orbit direction. A dimensional white volume rests on a beveled board, rises through a wider camera arc beside restrained copy, and opens into readable product pages. The opening page block rotates with the cover. Both reading pages rest normally, with no raised foreground leaf. Each spread fades its content in and out before the seven bending leaves turn; the camera pulls back around the castle before a centered invitation appears outside the book. FAQ and a minimal legal footer remain the only sections after the journey.\n\nThe owner's explicit correction, recorded in .impeccable/landing-direction.md, supersedes both earlier static compositions and the 2.3.0 hero followed by separate product sections. The visual world is now white on white, charcoal text, soft dimensional shadows, and restrained dark actions, with the castle providing the final color release. The former sculpture row, editable sample, world split, relationship graph, and separate closing scene are removed, not retained as component patterns.\n\nThe approved three-frame reference is animation-plans/book-refinement/.impeccable/mocks/03-cinematic-orbit.png. It governs the closed book, readable spread, and castle keyframes as one motion/material contract, not three separate sections. The owner's latest 2026-11-05 correction removes the raised foreground sheet and makes the sequence strictly open, fade in, fade out, then turn. It supersedes the previous overlapping-fade choreography without establishing that any historical reproduction gate passed.\n\nThis document governs only app/page.tsx and src/components/landing/. Auth, home, Writer, worlds, and other workspaces retain their existing global systems. The landing uses the plain-text Pacific Aurora wordmark and the existing shared browser theme preference. Existing logo and raster assets elsewhere in the repository are unaffected; the current landing ships no raster imagery.",
+    "keyCharacteristics": [
+      "One continuous, reversible white-book journey uses cinematic transitions and scroll-linked content fades.",
+      "Semantic Writing, Worlds, and Connections content sits on physical page planes.",
+      "Quiet neutral interface colors let the dimensional book and final castle carry the scene.",
+      "Curved layered paper and seeded cloth/fiber relief give the live geometry its material detail.",
+      "Pause preserves the current scene; reduced motion and WebGL failure expose all reading pages in a shorter layout."
+    ],
+    "rules": [
+      {
+        "name": "The Material Contrast Rule",
+        "body": "Swap the interface ground and ink together, including the signup fill and text. Preserve dark page text on the light physical book and flat reading pages. In Dark mode, keep a full-width interface ground beneath the centered finale's text, action, and focus outlines while the book and board remain white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Legible Still Rule",
+        "body": "Pause freezes the effective pose and preserves the current mounted canvas and page content. Hidden-tab and offscreen handling also stop target updates and damping; demand rendering sleeps when no frame is needed. Reduced motion or WebGL failure instead exposes all three semantic reading pages in the shorter layout, with no image dependency.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the whole landing inside the white-book journey, followed only by FAQ and the minimal legal footer.",
+      "Do anchor readable semantic content to the physical pages and retain the same content in the flat layout.",
+      "Do preserve continuous fades, reversible page turns, mobile right-page framing, and the centered castle finale.",
+      "Do drive geometry, outside text, and page opacity/visibility from the same effective pose.",
+      "Do preserve the current scene when paused and expose all three reading pages for reduced motion or WebGL failure.",
+      "Do retain the shared theme preference, visible keyboard focus, eight chapter destinations, skip-to-FAQ path, signup, Sign in, and legal links.",
+      "Do keep these visual rules scoped to the experimental landing; other application surfaces and assets retain their existing systems."
+    ],
+    "donts": [
+      "Don't restore the retired sculpture row, editable manuscript sample, world split, relationship graph, or separate closing section as current landing patterns.",
+      "Don't treat previous static comps or the 2.3.0 section structure as the fidelity target for the owner's 2.4.0 correction.",
+      "Don't turn the three-frame Cinematic Orbit reference into three independent sections or restore stale scroll holds.",
+      "Don't replace the semantic page articles with rasterized text or rely on canvas pixels as the only product explanation.",
+      "Don't turn pause into scene removal or substitute an image for the flat reading fallback.",
+      "Don't carry the retired blue-and-lime palette into this white-on-white landing."
+    ]
+  }
+}
