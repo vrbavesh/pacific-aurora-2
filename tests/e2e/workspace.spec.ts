@@ -120,6 +120,32 @@ test("writer saves text and preserves unsaved work between chapter tabs", async 
   ).toBe(true);
 });
 
+test("writer exports the saved book from the control above Save", async ({ page }) => {
+  await fixture(page);
+  await page.goto("/books/book-1");
+  const exportButton = page.getByRole("button", { name: "Export", exact: true }).filter({ visible: true });
+  const saveButton = page.getByRole("button", { name: "Save", exact: true }).filter({ visible: true });
+  const exportBox = await exportButton.boundingBox();
+  const saveBox = await saveButton.boundingBox();
+  expect(exportBox && saveBox && exportBox.y + exportBox.height <= saveBox.y).toBeTruthy();
+  await page.getByRole("textbox", { name: "Introduction manuscript" }).fill("A changed beginning.");
+  await exportButton.click();
+  await page.getByRole("button", { name: "EPUB" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Save all changed chapters" })).toBeVisible();
+  await saveButton.click();
+  await expect(page.getByRole("status").filter({ visible: true, hasText: "Saved" })).toHaveText("Saved");
+  await exportButton.click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "EPUB" }).click();
+  expect((await download).suggestedFilename()).toBe("The Far Shore.epub");
+  for (const format of ["PDF", "DOCX"] as const) {
+    await exportButton.click();
+    const nextDownload = page.waitForEvent("download");
+    await page.getByRole("button", { name: format }).click();
+    expect((await nextDownload).suggestedFilename()).toBe(`The Far Shore.${format.toLowerCase()}`);
+  }
+});
+
 test("writer loads an old chapter and saves allowlisted formatting", async ({
   page,
 }) => {

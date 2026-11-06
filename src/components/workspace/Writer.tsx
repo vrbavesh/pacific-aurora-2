@@ -16,6 +16,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import type { Chapter, ChapterContent } from "@/src/lib/api/generated";
+import type { BookFormat } from "@/src/lib/book-export";
 import { countWords, latestWordWindow } from "@/src/lib/ai-words";
 import { button, Confirm, message, write } from "./shared";
 import WriterSuggestions, { type WriterSnapshot } from "./WriterSuggestions";
@@ -62,12 +63,18 @@ export function safeWriterLink(value: string): string | null {
 function ChapterEditor({
   chapter,
   bookId,
+  bookName,
+  chapters,
+  hasUnsaved,
   onDirty,
   onContent,
   snapshot,
 }: {
   chapter: Chapter;
   bookId: string;
+  bookName: string;
+  chapters: Chapter[];
+  hasUnsaved: boolean;
   onDirty: (id: string, dirty: boolean) => void;
   onContent: (id: string, text: string) => void;
   snapshot?: WriterSnapshot;
@@ -78,6 +85,9 @@ function ChapterEditor({
   const [error, setError] = useState("");
   const [linkEntry, setLinkEntry] = useState(false);
   const [linkValue, setLinkValue] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const revision = useRef(0);
   const draftKey = `pacific_aurora_draft:${bookId}:${chapter.id}`;
   const [draft] = useState<ChapterContent | null>(() => {
@@ -175,6 +185,7 @@ function ChapterEditor({
       );
       if (revision.current === savedRevision) {
         setStatus("Saved");
+        setExportError("");
         onDirty(chapter.id!, false);
         try {
           sessionStorage.removeItem(draftKey);
@@ -189,6 +200,31 @@ function ChapterEditor({
       setSaving(false);
     }
   }, [editor, saving, bookId, chapter.id, cache, onDirty, draftKey]);
+  const exportBook = async (format: BookFormat) => {
+    setExportOpen(false);
+    if (hasUnsaved || saving) {
+      setExportError("Save all changed chapters before exporting.");
+      return;
+    }
+    setExporting(true);
+    setExportError("");
+    try {
+      const { createBookExport } = await import("@/src/lib/book-export");
+      const blob = await createBookExport(bookName, chapters, format);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${bookName.replace(/[\\/:*?"<>|]/g, "-") || "Book"}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (cause) {
+      setExportError(message(cause));
+    } finally {
+      setExporting(false);
+    }
+  };
   return (
     <div
       onKeyDown={(e) => {
@@ -382,14 +418,26 @@ function ChapterEditor({
         <span className="ml-auto text-xs text-foreground-muted" role="status">
           {saving ? "Saving..." : status}
         </span>
-        <button
-          className={`${button} ws-primary`}
-          disabled={!editor || saving}
-          onClick={() => void save()}
-        >
-          <FloppyDisk size={17} />
-          Save
-        </button>
+        <div className="relative flex flex-col gap-1">
+          <button className={button} type="button" aria-expanded={exportOpen} aria-controls={`export-formats-${chapter.id}`} disabled={exporting} onClick={() => setExportOpen((open) => !open)}>
+            {exporting ? "Exporting..." : "Export"}
+          </button>
+          {exportOpen && (
+            <div id={`export-formats-${chapter.id}`} role="group" aria-label="Export book format" className="absolute bottom-full right-0 z-20 mb-1 flex gap-1 rounded border border-border bg-background-elevated p-1 shadow-lg">
+              {(["epub", "pdf", "docx"] as const).map((format) => (
+                <button key={format} type="button" className={button} onClick={() => void exportBook(format)}>{format.toUpperCase()}</button>
+              ))}
+            </div>
+          )}
+          <button
+            className={`${button} ws-primary`}
+            disabled={!editor || saving}
+            onClick={() => void save()}
+          >
+            <FloppyDisk size={17} />
+            Save
+          </button>
+        </div>
       </div>
       {linkEntry && (
         <form
@@ -440,6 +488,7 @@ function ChapterEditor({
           {error} Your text is still here. Try Save again.
         </p>
       )}
+      {exportError && <p role="alert" className="px-6 py-3">{exportError}</p>}
       <div className="ws-paper">
         <h2 className="mb-8 font-serif text-3xl">{chapter.name}</h2>
         <EditorContent editor={editor} />
@@ -453,12 +502,14 @@ function ChapterEditor({
 
 export default function Writer({
   bookId,
+  bookName,
   chapters,
   requestedChapter,
   onCreate,
   visible = true,
 }: {
   bookId: string;
+  bookName: string;
   chapters: Chapter[];
   requestedChapter?: { id: string };
   onCreate: () => void;
@@ -599,6 +650,9 @@ export default function Writer({
               <ChapterEditor
                 chapter={chapter}
                 bookId={bookId}
+                bookName={bookName}
+                chapters={chapters}
+                hasUnsaved={Object.values(dirty).some(Boolean)}
                 onDirty={updateDirty}
                 onContent={reportContent}
                 snapshot={snapshots[id]}

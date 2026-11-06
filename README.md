@@ -1,6 +1,6 @@
 # Pacific Aurora
 
-**Version 2.4.4 on `codex/frontend-design-testing`.** The Cinematic Orbit landing
+**Version 2.5.0 on `export-testing`.** The Cinematic Orbit landing
 refines the white-book-on-white-board experience with orbital camera transitions,
 normal resting pages and synchronized content fades. Opening pages
 rotate with the cover; subsequent turns start only after content fades out. The castle reveal
@@ -57,6 +57,8 @@ npm install && npm run dev
 - Writer is a TipTap editor with chapter tabs, sessionStorage draft recovery, explicit Save,
   and Ctrl/Cmd+S. It has bounded font, heading, list, alignment, link, color, underline,
   and strike controls. A book with no chapters gets an "Introduction" chapter automatically
+- Export downloads the saved book, with chapters in order, as EPUB, PDF, or DOCX.
+  Unsaved chapter edits must be saved first.
 - Once a chapter reaches 500 words, the optional AI provider reviews its latest 500 words
   after a pause and again every five minutes while the Writer is open. It compares those
   words with current World Management data; missing facts become cards. Accept writes a
@@ -325,22 +327,3 @@ V2 adds three private AI state tables and a private resend-limit table.
   all against mocked API responses.
 - **CI** (`.github/workflows/verify.yml`) runs lint, typecheck, unit tests, build, and the
   browser suite on every push and pull request.
-
----
-
-## Deployment
-
-1. Keep V1.3.1 deployed until the V2 branch passes its release gate and you approve rollout.
-2. V2 migrations 0003 through 0007 were applied to the deployed database on
-   2026-10-17. The owner accepted proceeding without a verified backup; arrange
-   one now. Do not reapply the migrations or reverse them after V2 traffic.
-   Use a forward repair migration instead.
-3. Set the existing Supabase and Google variables plus `AI_BASE_URL`, `AI_MODEL`, and
-   `AI_API_KEY` for Groq at production scope. Never expose the AI key to the browser.
-4. In Supabase: set Site URL to the production origin, configure custom SMTP so OTP mail
-   delivers to real users, set the email OTP expiry to 120 seconds, and enable Google with
-   the Client ID and Secret.
-5. Deploy (`npm run build` must pass) and repeat the smoke path with disposable accounts.
-
-`plans/deployment-checklist.md` tracks this list; `plans/implementation-status.md` records
-what is built and what remains.

@@ -86,6 +86,7 @@ function BookContent({ bookId }: { bookId: string }) {
           <div hidden={tab !== "writer"}>
             <Writer
               bookId={bookId}
+              bookName={book.data.name ?? "Book"}
               chapters={chapters.data}
               requestedChapter={requestedChapter}
               onCreate={() => setTab("timeline")}
